@@ -87,6 +87,14 @@ const Home: React.FC = () => {
           },
         });
 
+        gsap.to("#cloud1", {
+          x: 500,
+          scrollTrigger: {
+            trigger: "#top-section",
+            scrub: 0.5,
+          },
+        });
+
         gsap.to(".arrowBGNew", {
           scale: 1.15,
           scrollTrigger: {

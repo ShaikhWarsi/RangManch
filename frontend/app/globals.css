@@ -1,0 +1,79 @@
+/* Google Fonts Import */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Noto+Sans+Devanagari:wght@400;700&family=Inter:wght@400;500;600;700&family=Instrument+Sans:wght@400;500;600;700&display=swap');
+
+@import 'aos/dist/aos.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom CSS Variables for Indian Theme */
+:root {
+  --maroon: #6B1F2B;
+  --walnut: #3E2F26;
+  --gold: #C6A75E;
+  --ivory: #F5EFE6;
+  --sand: #D8CFC4;
+}
+
+/* Tailwind Custom Colors */
+@layer base {
+  .text-maroon { color: #6B1F2B; }
+  .text-walnut { color: #3E2F26; }
+  .text-gold { color: #C6A75E; }
+  .text-ivory { color: #F5EFE6; }
+  .text-sand { color: #D8CFC4; }
+  
+  .bg-maroon { background-color: #6B1F2B; }
+  .bg-walnut { background-color: #3E2F26; }
+  .bg-gold { background-color: #C6A75E; }
+  .bg-ivory { background-color: #F5EFE6; }
+  .bg-sand { background-color: #D8CFC4; }
+  
+  .border-maroon { border-color: #6B1F2B; }
+  .border-walnut { border-color: #3E2F26; }
+  .border-gold { border-color: #C6A75E; }
+  .border-ivory { border-color: #F5EFE6; }
+  .border-sand { border-color: #D8CFC4; }
+}
+
+/* Custom font classes */
+.font-heading {
+  font-family: 'Cormorant Garamond', serif;
+}
+
+.font-ui {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+.font-devanagari {
+  font-family: 'Noto Sans Devanagari', sans-serif;
+}
+
+/* Shadow utilities */
+.shadow-premium {
+  box-shadow: 0 10px 30px rgba(107, 31, 43, 0.2);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}

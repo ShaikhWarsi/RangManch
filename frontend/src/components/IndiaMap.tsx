@@ -121,6 +121,26 @@ const TileLayerAny = TileLayer as any;
 const GeoJSONAny = GeoJSON as any;
 const ZoomControlAny = ZoomControl as any;
 
+// Memoized map component to prevent re-initialization
+const MemoizedMap = React.memo(({ children }: { children: React.ReactNode }) => {
+  return (
+    <MapContainerAny
+      center={[22.5, 80]}
+      zoom={4.5}
+      style={{ 
+        height: "100vh", 
+        width: "100vw",
+        filter: "brightness(0.95) contrast(1.1)"
+      }}
+      zoomControl={false}
+      scrollWheelZoom={true}
+      attributionControl={false}
+    >
+      {children}
+    </MapContainerAny>
+  );
+});
+
 const IndiaMap: React.FC = () => {
   const { isMobile, isTablet, windowWidth } = useResponsive();
   const [selectedState, setSelectedState] = useState<string | null>(null);
@@ -337,28 +357,17 @@ const IndiaMap: React.FC = () => {
 
       {/* Map Container */}
       <div>
-        <MapContainerAny
-          center={[22.5, 80]}
-          zoom={isMobile ? 4 : 4.5}
-          style={{ 
-            height: "100vh", 
-            width: "100vw",
-            filter: "brightness(0.95) contrast(1.1)"
-          }}
-          zoomControl={false}
-          scrollWheelZoom={true}
-          attributionControl={false}
-        >
-        <TileLayerAny
-          url="https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        />
-        
-        <ZoomControlAny position="bottomright" />
+        <MemoizedMap>
+          <TileLayerAny
+            url="https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          />
+          
+          <ZoomControlAny position="bottomright" />
 
-        <GeoJSONAny
-          key={isMobile ? 'mobile' : 'desktop'}
-          data={data as any}
+          <GeoJSONAny
+            key={isMobile ? 'mobile' : 'desktop'}
+            data={data as any}
             onEachFeature={(feature: any, layer: L.Layer) => {
               const stateName = feature.properties.ST_NM;
               const heritageInfo = stateHeritageInfo[stateName];
@@ -457,7 +466,7 @@ const IndiaMap: React.FC = () => {
               });
             }}
           />
-        </MapContainerAny>
+        </MemoizedMap>
       </div>
 
       {/* Mobile Toggle Button */}

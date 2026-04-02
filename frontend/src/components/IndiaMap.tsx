@@ -7,14 +7,14 @@ import data from "../IndianData/UpdateIndiaGeo.json";
 import "../styles/IndiaMap.css";
 import { Building, Home, MapPin, Trees, Anchor, Target, X } from "lucide-react";
 
-// Dynamic imports for leaflet components with proper types
+// Dynamic imports for leaflet components to avoid SSR issues
 const MapContainer = dynamic(
-  () => import("react-leaflet").then((mod: any) => mod.MapContainer),
+  () => import("react-leaflet").then((mod) => mod.MapContainer),
   { ssr: false }
 );
 
 const TileLayer = dynamic(
-  () => import("react-leaflet").then((mod: any) => mod.TileLayer),
+  () => import("react-leaflet").then((mod) => mod.TileLayer),
   { ssr: false }
 );
 
@@ -121,26 +121,6 @@ const TileLayerAny = TileLayer as any;
 const GeoJSONAny = GeoJSON as any;
 const ZoomControlAny = ZoomControl as any;
 
-// Memoized map component to prevent re-initialization
-const MemoizedMap = React.memo(({ children }: { children: React.ReactNode }) => {
-  return (
-    <MapContainerAny
-      center={[22.5, 80]}
-      zoom={4.5}
-      style={{ 
-        height: "100vh", 
-        width: "100vw",
-        filter: "brightness(0.95) contrast(1.1)"
-      }}
-      zoomControl={false}
-      scrollWheelZoom={true}
-      attributionControl={false}
-    >
-      {children}
-    </MapContainerAny>
-  );
-});
-
 const IndiaMap: React.FC = () => {
   const { isMobile, isTablet, windowWidth } = useResponsive();
   const [selectedState, setSelectedState] = useState<string | null>(null);
@@ -148,7 +128,6 @@ const IndiaMap: React.FC = () => {
   const [hoveredState, setHoveredState] = useState<string | null>(null);
   const [showMobilePanel, setShowMobilePanel] = useState(false);
   const mapRef = useRef<any>(null);
-  const [mapInitialized, setMapInitialized] = useState(false);
   
   // Cultural heritage info for each state
   const stateHeritageInfo: StateHeritageMap = {
@@ -357,32 +336,30 @@ const IndiaMap: React.FC = () => {
       </div>
 
       {/* Map Container */}
-      <div>
-        {!mapInitialized ? (
-          <MapContainerAny
-            key="india-map-static"
-            center={[22.5, 80]}
-            zoom={isMobile ? 4 : 4.5}
-            style={{ 
-              height: "100vh", 
-              width: "100vw",
-              filter: "brightness(0.95) contrast(1.1)"
-            }}
-            zoomControl={false}
-            scrollWheelZoom={true}
-            attributionControl={false}
-            whenReady={() => setMapInitialized(true)}
-          >
-          <TileLayerAny
-            url="https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          />
-          
-          <ZoomControlAny position="bottomright" />
+      <div key={`map-wrapper-${isMobile ? 'mobile' : 'desktop'}`}>
+        <MapContainerAny
+          key="india-map-permanent"
+          center={[22.5, 80]}
+          zoom={isMobile ? 4 : 4.5}
+          style={{ 
+            height: "100vh", 
+            width: "100vw",
+            filter: "brightness(0.95) contrast(1.1)"
+          }}
+          zoomControl={false}
+          scrollWheelZoom={true}
+          attributionControl={false}
+        >
+        <TileLayerAny
+          url="https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        />
+        
+        <ZoomControlAny position="bottomright" />
 
-          <GeoJSONAny
-            key={isMobile ? 'mobile' : 'desktop'}
-            data={data as any}
+        <GeoJSONAny
+          key={isMobile ? 'mobile' : 'desktop'}
+          data={data as any}
             onEachFeature={(feature: any, layer: L.Layer) => {
               const stateName = feature.properties.ST_NM;
               const heritageInfo = stateHeritageInfo[stateName];
@@ -482,19 +459,6 @@ const IndiaMap: React.FC = () => {
             }}
           />
         </MapContainerAny>
-        ) : (
-          <div style={{ 
-            height: "100vh", 
-            width: "100vw",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            background: "#1a1a1a",
-            color: "white"
-          }}>
-            Map Loaded
-          </div>
-        )}
       </div>
 
       {/* Mobile Toggle Button */}
@@ -589,7 +553,8 @@ const IndiaMap: React.FC = () => {
                 onClick={() => {
                   const stateFeature = (data as any).features.find((f: any) => f.properties.ST_NM === state);
                   if (stateFeature) {
-                    handleStateClick(state);
+                    const bounds = L.geoJSON(stateFeature).getBounds();
+                    handleStateClick(stateFeature, bounds);
                     if (isMobile) setShowMobilePanel(false);
                   }
                 }}

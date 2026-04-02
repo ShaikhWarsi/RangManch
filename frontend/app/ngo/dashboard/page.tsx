@@ -1,4 +1,4 @@
-import { NGODashboard } from '@/legacy-pages/NGODashboard'
+import { NGODashboard } from '@/pages/NGODashboard'
 import ProtectedRoute from '@/components/ProtectedRoute'
 
 export default function NGODashboardRoute() {

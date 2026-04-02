@@ -1,4 +1,4 @@
-import SignUpPage from '@/legacy-pages/SignUpPage'
+import SignUpPage from '@/pages/SignUpPage'
 
 export const dynamic = 'force-dynamic'
 

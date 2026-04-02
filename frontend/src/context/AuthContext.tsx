@@ -8,7 +8,7 @@ import {
   onAuthStateChanged,
   User as FirebaseUser
 } from 'firebase/auth';
-import { auth } from '../firebase/config';
+import { auth, isDemoMode } from '../firebase/config';
 
 // TypeScript interfaces
 export interface User {
@@ -77,14 +77,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [isDemoMode, setIsDemoMode] = useState<boolean>(false);
 
   // Check for existing session on mount
   useEffect(() => {
     const checkAuth = async () => {
       try {
         // Try to use real Firebase first
-        if (auth && process.env.NEXT_PUBLIC_FIREBASE_API_KEY && process.env.NEXT_PUBLIC_FIREBASE_API_KEY !== "demo-api-key") {
+        if (auth && !isDemoMode) {
           // Real Firebase mode
           const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -105,8 +104,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
           return () => unsubscribe();
         } else {
-          // Demo mode
-          setIsDemoMode(true);
+          // Demo mode - use imported flag
           const savedUser = localStorage.getItem('currentUser');
           if (savedUser) {
             const user = JSON.parse(savedUser);
@@ -116,7 +114,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setLoading(false);
         }
       } catch (error) {
-        setIsDemoMode(true);
         setLoading(false);
       }
     };
@@ -157,10 +154,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       if (isDemoMode) {
         // Demo mode login
-        const user = await demoAuth.login(email, password);
-        setCurrentUser(user);
-        setUserRole(user.role || 'buyer');
-        localStorage.setItem('currentUser', JSON.stringify(user));
+        const demoUser = await demoAuth.login(email, password);
+        setCurrentUser(demoUser);
+        setUserRole(demoUser.role || 'buyer');
+        localStorage.setItem('currentUser', JSON.stringify(demoUser));
       } else {
         // Real Firebase login
         const userCredential = await signInWithEmailAndPassword(auth, email, password);

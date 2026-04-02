@@ -3,6 +3,8 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 // Firebase configuration - Replace with your actual config
+const isDemoMode = !process.env.NEXT_PUBLIC_FIREBASE_API_KEY || process.env.NEXT_PUBLIC_FIREBASE_API_KEY === "demo-api-key";
+
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "demo-api-key",
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "demo-auth-domain",
@@ -31,7 +33,8 @@ export interface FirebaseConfig {
   appId: string;
 }
 
-// Demo configuration for development when Firebase is not configured
+// Export demo mode flag for components to use
+export { isDemoMode };
 export const demoFirebaseConfig: FirebaseConfig = {
   apiKey: "demo-api-key",
   authDomain: "demo-auth-domain", 

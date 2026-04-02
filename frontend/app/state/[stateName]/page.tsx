@@ -1,6 +1,6 @@
 'use client'
 
-import StatePage from '@/legacy-pages/StatePage'
+import StatePage from '@/pages/StatePage'
 
 interface StatePageProps {
   params: {

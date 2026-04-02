@@ -1,4 +1,4 @@
-import { ArtisanDashboard } from '@/legacy-pages/ArtisanDashboard'
+import { ArtisanDashboard } from '../../components/ArtisanDashboard'
 import ProtectedRoute from '@/components/ProtectedRoute'
 
 export default function ArtisanDashboardRoute() {

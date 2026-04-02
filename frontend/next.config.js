@@ -3,6 +3,7 @@ const nextConfig = {
   reactStrictMode: true,
   output: 'export', // Enable static exports for Netlify
   trailingSlash: true,
+  pageExtensions: ['tsx', 'ts', 'js', 'jsx'], // Allow pages directory with app router
   images: {
     remotePatterns: [
       {

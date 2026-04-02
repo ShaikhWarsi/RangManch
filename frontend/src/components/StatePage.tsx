@@ -1,13 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from 'next/navigation'
 import "../styles/StatePage.css";
-
-interface StateColors {
-  primary: string;
-  secondary: string;
-  accent: string;
-  background: string;
-}
+import { theme } from '../styles/theme';
 
 interface StateData {
   name: string;
@@ -39,20 +33,15 @@ const StatePage = () => {
   const [stateData, setStateData] = useState<StateData | null>(null);
   const [activeTab, setActiveTab] = useState("culture");
 
-  // State-specific color schemes
-  const stateColors: { [key: string]: StateColors } = {
-    "uttarpradesh": {
-      primary: "#800000", // Maroon
-      secondary: "#FFD700", // Gold
-      accent: "#138808", // Green
-      background: "#FFF8E1" // Light yellow
-    },
-    "rajasthan": {
-      primary: "#D35400", // Orange
-      secondary: "#2980B9", // Blue
-      accent: "#27AE60", // Green
-      background: "#FEF9E7" // Light orange
-    },
+  // Use centralized theme colors for consistency
+  const colors = {
+    primary: theme.colors.maroon,
+    secondary: theme.colors.gold,
+    accent: theme.colors.teal,
+    background: theme.colors.ivory,
+    walnut: theme.colors.walnut,
+    sand: theme.colors.sand
+  };
     "tamilnadu": {
       primary: "#1A5276", // Deep Blue
       secondary: "#E74C3C", // Red

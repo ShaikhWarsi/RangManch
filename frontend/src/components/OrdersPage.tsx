@@ -82,16 +82,18 @@ export const OrdersPage: React.FC = () => {
             <div className="w-24 h-24 rounded-full bg-sand/5 flex items-center justify-center text-sand mx-auto mb-8">
               <Package size={48} strokeWidth={1} />
             </div>
-            <h2 className="text-3xl font-heading text-walnut mb-4">No Acquisitions Yet</h2>
+            <h2 className="text-3xl font-heading text-walnut mb-4">No Orders Yet</h2>
             <p className="text-walnut/40 font-ui text-sm mb-12 max-w-md mx-auto">
               Your personal archive of authentic Indian heritage is waiting to be started.
             </p>
-            <button
-              onClick={() => router.push("/trade")}
-              className="px-12 py-4 bg-maroon text-ivory rounded-full font-ui font-bold text-sm shadow-premium hover:bg-walnut transition-all uppercase tracking-widest"
-            >
-              Browse the Gallery
-            </button>
+            <div className="flex justify-center">
+              <button
+                onClick={() => router.push("/trade")}
+                className="px-12 py-4 bg-maroon text-ivory rounded-full font-ui font-bold text-sm shadow-premium hover:bg-walnut transition-all uppercase tracking-widest"
+              >
+                Browse Artisans
+              </button>
+            </div>
           </div>
         ) : (
           <div className="flex flex-col gap-12">

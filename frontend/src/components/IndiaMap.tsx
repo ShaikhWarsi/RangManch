@@ -7,14 +7,14 @@ import data from "../IndianData/UpdateIndiaGeo.json";
 import "../styles/IndiaMap.css";
 import { Building, Home, MapPin, Trees, Anchor, Target, X } from "lucide-react";
 
-// Dynamic imports for leaflet components to avoid SSR issues
+// Dynamic imports for leaflet components with proper types
 const MapContainer = dynamic(
-  () => import("react-leaflet").then((mod) => mod.MapContainer),
+  () => import("react-leaflet").then((mod: any) => mod.MapContainer),
   { ssr: false }
 );
 
 const TileLayer = dynamic(
-  () => import("react-leaflet").then((mod) => mod.TileLayer),
+  () => import("react-leaflet").then((mod: any) => mod.TileLayer),
   { ssr: false }
 );
 

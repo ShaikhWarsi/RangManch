@@ -6,6 +6,7 @@ import morgan from "morgan";
 import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
 import apiRoutes from "./routes/api";
+import ordersRoutes from "./routes/orders";
 import { errorHandler, notFound } from "./middleware/errorHandler";
 
 dotenv.config();
@@ -51,6 +52,7 @@ app.use("/api", apiLimiter);
 
 // Routes
 app.use("/api/v1", apiRoutes);
+app.use("/api/orders", ordersRoutes);
 
 // Health check endpoint (directly on server for monitoring)
 app.get("/health", (req: Request, res: Response): void => {

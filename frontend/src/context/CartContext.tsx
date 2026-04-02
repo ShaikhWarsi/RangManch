@@ -22,6 +22,12 @@ export interface Order {
   status: string;
   shippingAddress?: string;
   paymentMethod?: string;
+  customer?: {
+    name: string;
+    email: string;
+    contact: string;
+  };
+  razorpayOrderId?: string;
 }
 
 export interface CartContextType {
@@ -31,7 +37,7 @@ export interface CartContextType {
   removeFromCart: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
-  checkout: () => Order | null;
+  checkout: (paymentMethod: 'razorpay' | 'cod', customerDetails?: any) => Promise<Order | null>;
   getTotalPrice: () => number;
   getTotalItems: () => number;
 }
@@ -121,24 +127,91 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCartItems([]);
   };
 
-  // Checkout
-  const checkout = (): Order | null => {
+  // Checkout - Async function with payment method support
+  const checkout = async (paymentMethod: 'razorpay' | 'cod' = 'cod', customerDetails?: any): Promise<Order | null> => {
     if (cartItems.length === 0) return null;
 
-    const newOrder: Order = {
-      id: `order_${Date.now()}_${Math.random().toString(36).substring(7)}`,
-      items: [...cartItems],
-      total: getTotalPrice(),
-      date: new Date().toISOString(),
-      status: 'pending',
-      shippingAddress: 'Default Address',
-      paymentMethod: 'COD'
-    };
+    try {
+      const total = getTotalPrice();
+      const newOrder: Order = {
+        id: `order_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+        items: [...cartItems],
+        total,
+        date: new Date().toISOString(),
+        status: paymentMethod === 'cod' ? 'pending' : 'payment_pending',
+        paymentMethod,
+        shippingAddress: customerDetails?.address || 'Default Address',
+        customer: {
+          name: customerDetails?.name || 'Guest',
+          email: customerDetails?.email || 'guest@example.com',
+          contact: customerDetails?.phone || '0000000000'
+        }
+      };
 
-    setOrders(prevOrders => [...prevOrders, newOrder]);
-    clearCart();
-    
-    return newOrder;
+      // For demo purposes, save to localStorage immediately for COD
+      if (paymentMethod === 'cod') {
+        const updatedOrders = [...orders, newOrder];
+        setOrders(updatedOrders);
+        localStorage.setItem('orders', JSON.stringify(updatedOrders));
+        
+        // Also try to sync with backend
+        try {
+          await fetch('/api/orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newOrder)
+          });
+        } catch (e) {
+          console.log('Backend sync failed, order saved locally');
+        }
+        
+        // Clear cart after successful order
+        setCartItems([]);
+        localStorage.setItem('cart', JSON.stringify([]));
+        console.log('COD Order created successfully:', newOrder);
+        return newOrder;
+      }
+
+      // For Razorpay, create order in backend first
+      const response = await fetch('/api/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: total,
+          currency: 'INR',
+          receipt: newOrder.id,
+          customer: newOrder.customer,
+          products: cartItems.map(item => ({
+            id: item.id,
+            name: item.name,
+            quantity: item.quantity,
+            price: item.price
+          }))
+        })
+      });
+
+      if (response.ok) {
+        const razorpayOrder = await response.json();
+        
+        // Store order locally
+        const updatedOrders = [...orders, { ...newOrder, razorpayOrderId: razorpayOrder.orderId }];
+        setOrders(updatedOrders);
+        localStorage.setItem('orders', JSON.stringify(updatedOrders));
+        
+        // Clear cart
+        setCartItems([]);
+        localStorage.setItem('cart', JSON.stringify([]));
+        
+        console.log('Razorpay Order created:', razorpayOrder);
+        return { ...newOrder, razorpayOrderId: razorpayOrder.orderId };
+      } else {
+        throw new Error('Failed to create Razorpay order');
+      }
+
+    } catch (error) {
+      console.error('Checkout error:', error);
+      return null;
+    }
   };
 
   // Get total price

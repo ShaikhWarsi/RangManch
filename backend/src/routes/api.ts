@@ -23,8 +23,12 @@ import {
 } from "../middleware/validation";
 import Razorpay from 'razorpay';
 import { MongoClient } from 'mongodb';
+import cors from './cors';
 
 const router = Router();
+
+// Apply CORS middleware
+router.use(cors);
 
 // Razorpay configuration
 const razorpay = new Razorpay({
@@ -47,8 +51,99 @@ router.get("/states/:stateName", validateStateName, getStateByName);
 router.delete("/states/:stateName", validateStateName, deleteState);
 router.patch("/states/:stateID", validateStateName, updateState);
 
+// Artisan Routes
+router.get("/artisans", async (req: any, res: any) => {
+  try {
+    const client = new MongoClient(process.env.MONGODB_URL || 'mongodb://localhost:27017/rangmanch');
+    await client.connect();
+    const db = client.db();
+    
+    const artisans = await db.collection('artisans').find({}).sort({ createdAt: -1 }).toArray();
+    
+    res.json({
+      success: true,
+      artisans,
+      count: artisans.length
+    });
+    
+  } catch (error: any) {
+    console.error('Get artisans error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get artisans',
+      message: error?.message || 'Unknown error'
+    });
+  }
+});
+
+router.get("/artisans/:id", async (req: any, res: any) => {
+  try {
+    const { id } = req.params;
+    
+    const client = new MongoClient(process.env.MONGODB_URL || 'mongodb://localhost:27017/rangmanch');
+    await client.connect();
+    const db = client.db();
+    
+    const artisan = await db.collection('artisans').findOne({ _id: id });
+    
+    if (artisan) {
+      res.json({
+        success: true,
+        artisan,
+        message: 'Artisan found'
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        error: 'Artisan not found',
+        message: 'Artisan not found'
+      });
+    }
+    
+  } catch (error: any) {
+    console.error('Get artisan error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get artisan',
+      message: error?.message || 'Unknown error'
+    });
+  }
+});
+
+router.post("/artisans", async (req: any, res: any) => {
+  try {
+    const client = new MongoClient(process.env.MONGODB_URL || 'mongodb://localhost:27017/rangmanch');
+    await client.connect();
+    const db = client.db();
+    
+    const artisan = {
+      ...req.body,
+      _id: new Date().getTime().toString(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      verified: false // New artisans start as unverified
+    };
+    
+    await db.collection('artisans').insertOne(artisan);
+    
+    res.status(201).json({
+      success: true,
+      artisan,
+      message: 'Artisan created successfully'
+    });
+    
+  } catch (error: any) {
+    console.error('Create artisan error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to create artisan',
+      message: error?.message || 'Unknown error'
+    });
+  }
+});
+
 // Razorpay Routes for Real Transactions
-router.post('/create-order', async (req, res) => {
+router.post('/create-order', async (req: any, res: any) => {
   try {
     const { amount, currency, receipt, notes, customer, products } = req.body;
     
@@ -62,7 +157,7 @@ router.post('/create-order', async (req, res) => {
         email: customer.email,
         contact: customer.contact,
       },
-      products: products.map(p => ({
+      products: products.map((p: any) => ({
         name: p.name,
         quantity: p.quantity,
         price: p.price * 100, // Convert to paise
@@ -72,8 +167,7 @@ router.post('/create-order', async (req, res) => {
         checkout: {
           method: 'emi',
           emi: {
-            tenure: 3,
-            tenure: 6
+            tenure: [3, 6, 9, 12, 18, 24]
           }
         }
       }

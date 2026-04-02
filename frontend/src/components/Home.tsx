@@ -20,7 +20,6 @@ const flybird = "/HomePage/flybird.gif";
 
 import IndianNavbarFixed from "../components/IndianNavbarFixed";
 import { Footer } from "../components/Footer";
-import { LoadingPage } from "./LoadingPage";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -46,7 +45,7 @@ const Home: React.FC = () => {
     flybird
   ];
 
-  // Preload images
+  // Preload images with timeout fallback
   useEffect(() => {
     const RathBGImg = new Image();
     RathBGImg.src = arrowBGNew;
@@ -73,6 +72,17 @@ const Home: React.FC = () => {
         }
       };
     });
+
+    // Fallback timeout to ensure loading completes
+    const timeout = setTimeout(() => {
+      setImagesLoaded(true);
+      setShowLoading(false);
+      setLoadingComplete(true);
+    }, 3000); // 3 seconds fallback
+
+    return () => {
+      clearTimeout(timeout);
+    };
   }, []);
 
   // GSAP animations - simplified for better performance
@@ -164,7 +174,12 @@ const Home: React.FC = () => {
     <div>
       {/* Loading Screen */}
       {showLoading && (
-        <LoadingPage onLoadingComplete={handleLoadingComplete} />
+        <div className="fixed inset-0 bg-ivory/90 flex items-center justify-center z-50">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-maroon border-t-transparent"></div>
+            <p className="mt-4 text-walnut font-ui">Loading RangManch...</p>
+          </div>
+        </div>
       )}
 
       {/* Main Content */}

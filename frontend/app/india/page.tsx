@@ -1,4 +1,4 @@
-import IndiaMap from '@/pages/IndiaMap'
+import IndiaMap from '../../components/IndiaMap'
 
 export const dynamic = 'force-dynamic'
 

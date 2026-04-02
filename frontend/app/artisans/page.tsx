@@ -1,4 +1,4 @@
-import { ArtisansList } from '../../components/ArtisansList'
+import ArtisansList from '@/components/ArtisansList'
 
 export default function ArtisansPageRoute() {
   return <ArtisansList />

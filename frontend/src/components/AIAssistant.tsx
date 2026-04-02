@@ -1,7 +1,8 @@
 'use client'
 
 import React, { useState } from 'react'
-import { MessageCircle, Send, Bot, Sparkles } from 'lucide-react'
+import { MessageCircle, Send, Bot, Sparkles, X } from 'lucide-react'
+import GroqService from '../services/groqService'
 
 interface Message {
   id: string
@@ -16,7 +17,7 @@ export const AIAssistant: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: '👋 Namaste! I\'m your AI craft assistant. I can help you find the perfect artisan for any occasion. What brings you here today?',
+      text: '👋 Namaste! I\'m your AI craft advisor. I can help you find perfect authentic Indian crafts and artisans. What brings you here today?',
       sender: 'ai',
       timestamp: new Date()
     }
@@ -38,30 +39,30 @@ export const AIAssistant: React.FC = () => {
     setInputText('')
     setIsTyping(true)
 
-    // Simulate AI response
-    setTimeout(async () => {
-      const aiResponse = await generateAIResponse(inputText)
-      setMessages(prev => [...prev, aiResponse])
+    try {
+      const recommendation = await GroqService.getCraftRecommendation(inputText)
+      
+      const aiMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        text: recommendation.reasoning,
+        sender: 'ai',
+        timestamp: new Date()
+      }
+
+      setMessages(prev => [...prev, aiMessage])
+    } catch (error) {
+      console.error('AI Service Error:', error)
+      
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        text: 'I apologize, but I\'m having trouble connecting right now. Please try again in a moment.',
+        sender: 'ai',
+        timestamp: new Date()
+      }
+      
+      setMessages(prev => [...prev, errorMessage])
+    } finally {
       setIsTyping(false)
-    }, 1500)
-  }
-
-  const generateAIResponse = async (query: string): Promise<Message> => {
-    // Simulate API call to Groq
-    const responses = [
-      `For a wedding Bandhani gift, I recommend **Master Weaver Rajesh Kumar** from Kutch. His Bandhani sarees use traditional tie-dye techniques with natural colors, perfect for wedding ceremonies. Price range: ₹8,000-15,000. Would you like me to connect you with him?`,
-      `The **finest Bandhani for weddings** comes from **Kutch, Gujarat**. Look for artisans specializing in **Gharchola** and **Khatri** Bandhani techniques. These feature intricate peacock and floral motifs in vibrant reds and maroons - traditionally auspicious for weddings.`,
-      `I suggest **Zarina Begum** from Jaipur for your wedding Bandhani. She specializes in **Bandhej** style with gold zari work on silk. Her pieces are museum-quality and perfect for special occasions. Average wedding Bandhani saree: ₹12,000-25,000.`,
-      `For authentic wedding Bandhani, consider **traditional reds** (geru, kumkum) with **gold borders**. Master artisans use **natural vegetable dyes** that last generations. Wedding collections typically take 2-3 months to complete.`
-    ]
-
-    const response = responses[Math.floor(Math.random() * responses.length)]
-    
-    return {
-      id: Date.now().toString(),
-      text: response,
-      sender: 'ai',
-      timestamp: new Date()
     }
   }
 

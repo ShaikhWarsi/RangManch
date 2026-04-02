@@ -1,3 +1,5 @@
+import { MessageCircle, Sparkles, Bot, Send, Loader, MapPin, Star, Clock, DollarSign } from 'lucide-react'
+
 interface CraftRecommendation {
   artisan: {
     name: string;
@@ -60,7 +62,33 @@ Always provide:
 4. Alternative options within budget
 5. Contact information when relevant
 
-Be helpful, culturally aware, and focus on preserving traditional crafts.`
+Be helpful, culturally aware, and focus on preserving traditional crafts.
+
+RESPOND IN JSON FORMAT:
+{
+  "artisan": {
+    "name": "Artisan Name",
+    "experience": "X years",
+    "rating": 4.8,
+    "location": "City, State",
+    "specialties": ["craft1", "craft2"]
+  },
+  "product": {
+    "name": "Product Name",
+    "price": 3500,
+    "description": "Product description",
+    "category": "category",
+    "craft": "craft_type"
+  },
+  "reasoning": "Detailed explanation of why this recommendation",
+  "alternatives": [
+    {
+      "name": "Alternative 1",
+      "price": 2800,
+      "reason": "Why this is a good alternative"
+    }
+  ]
+}`
             },
             {
               role: 'user',
@@ -68,14 +96,21 @@ Be helpful, culturally aware, and focus on preserving traditional crafts.`
             }
           ],
           temperature: 0.7,
-          max_tokens: 500
+          max_tokens: 800,
+          response_format: { type: 'json_object' }
         })
       });
 
       const data = await response.json();
-      const aiResponse = data.choices[0]?.message?.content || 'I apologize, but I cannot provide a recommendation at this moment.';
+      const aiResponse = data.choices[0]?.message?.content || '{}';
 
-      return this.parseAIResponse(aiResponse);
+      try {
+        const structuredResponse = JSON.parse(aiResponse);
+        return structuredResponse;
+      } catch (parseError) {
+        console.error('JSON Parse Error:', parseError);
+        return this.getFallbackRecommendation(userQuery);
+      }
       
     } catch (error) {
       console.error('Groq API Error:', error);

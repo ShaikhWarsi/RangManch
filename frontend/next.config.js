@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
+  reactStrictMode: false, // Disabled to prevent Leaflet double-initialization
   output: 'export', // Enable static exports for Netlify
   trailingSlash: true,
   pageExtensions: ['tsx', 'ts', 'js', 'jsx'], // Allow pages directory with app router

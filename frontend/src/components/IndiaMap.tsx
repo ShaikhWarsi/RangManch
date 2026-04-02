@@ -7,74 +7,6 @@ import data from "../IndianData/UpdateIndiaGeo.json";
 import "../styles/IndiaMap.css";
 import { Building, Home, MapPin, Trees, Anchor, Target, X } from "lucide-react";
 
-// Dynamic imports for leaflet components to avoid SSR issues
-const MapContainer = dynamic(
-  () => import("react-leaflet").then((mod) => mod.MapContainer),
-  { ssr: false }
-);
-
-const TileLayer = dynamic(
-  () => import("react-leaflet").then((mod) => mod.TileLayer),
-  { ssr: false }
-);
-
-const GeoJSON = dynamic(
-  () => import("react-leaflet").then((mod) => mod.GeoJSON),
-  { ssr: false }
-);
-
-const ZoomControl = dynamic(
-  () => import("react-leaflet").then((mod) => mod.ZoomControl),
-  { ssr: false }
-);
-
-// Dynamic import for L (leaflet) to avoid SSR issues
-let L: any = null;
-
-// Helper function to get L
-const getL = async () => {
-  if (!L) {
-    const leaflet = await import("leaflet");
-    L = leaflet.default;
-  }
-  return L;
-};
-
-// Dynamic component wrapper
-const IndiaMapWrapper = React.memo(() => {
-  const [isClient, setIsClient] = useState(false);
-  const [leafletLoaded, setLeafletLoaded] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-    getL().then(() => {
-      setLeafletLoaded(true);
-    });
-    
-    return () => {
-      setIsClient(false);
-      setLeafletLoaded(false);
-    };
-  }, []);
-
-  if (!isClient || !leafletLoaded) {
-    return (
-      <div style={{ 
-        height: '100vh', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        background: '#1a1a1a',
-        color: 'white'
-      }}>
-        <div>Loading Map...</div>
-      </div>
-    );
-  }
-
-  return <IndiaMap />;
-});
-
 // --- TypeScript Interfaces ---
 
 interface HeritageInfo {
@@ -116,6 +48,81 @@ const useResponsive = (): ResponsiveMetrics => {
   return { isMobile, isTablet, windowWidth };
 };
 
+// Dynamic imports for leaflet components to avoid SSR issues
+const MapContainer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.MapContainer),
+  { ssr: false }
+);
+
+const TileLayer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.TileLayer),
+  { ssr: false }
+);
+
+const GeoJSON = dynamic(
+  () => import("react-leaflet").then((mod) => mod.GeoJSON),
+  { ssr: false }
+);
+
+const ZoomControl = dynamic(
+  () => import("react-leaflet").then((mod) => mod.ZoomControl),
+  { ssr: false }
+);
+
+// Dynamic import for L (leaflet) to avoid SSR issues
+let L: any = null;
+
+// Helper function to get L
+const getL = async () => {
+  if (!L) {
+    const leaflet = await import("leaflet");
+    L = leaflet.default;
+  }
+  return L;
+};
+
+// Dynamic component wrapper
+const IndiaMapWrapper = React.memo(() => {
+  const [isClient, setIsClient] = useState(false);
+  const [leafletLoaded, setLeafletLoaded] = useState(false);
+  const [containerKey, setContainerKey] = useState(0);
+
+  useEffect(() => {
+    setIsClient(true);
+    getL().then(() => {
+      setLeafletLoaded(true);
+    });
+    
+    return () => {
+      setIsClient(false);
+      setLeafletLoaded(false);
+    };
+  }, []);
+
+  // Force complete remount when window size changes
+  const { isMobile } = useResponsive();
+  useEffect(() => {
+    setContainerKey(prev => prev + 1);
+  }, [isMobile]);
+
+  if (!isClient || !leafletLoaded) {
+    return (
+      <div style={{ 
+        height: '100vh', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        background: '#1a1a1a',
+        color: 'white'
+      }}>
+        <div>Loading Map...</div>
+      </div>
+    );
+  }
+
+  return <IndiaMap key={containerKey} />;
+});
+
 const MapContainerAny = MapContainer as any;
 const TileLayerAny = TileLayer as any;
 const GeoJSONAny = GeoJSON as any;
@@ -128,6 +135,12 @@ const IndiaMap: React.FC = () => {
   const [hoveredState, setHoveredState] = useState<string | null>(null);
   const [showMobilePanel, setShowMobilePanel] = useState(false);
   const mapRef = useRef<any>(null);
+  const [mapKey, setMapKey] = useState(0);
+  
+  // Force map re-initialization when mobile state changes
+  useEffect(() => {
+    setMapKey(prev => prev + 1);
+  }, [isMobile]);
   
   // Cultural heritage info for each state
   const stateHeritageInfo: StateHeritageMap = {
@@ -338,7 +351,7 @@ const IndiaMap: React.FC = () => {
       {/* Map Container */}
       <div key={`map-wrapper-${isMobile ? 'mobile' : 'desktop'}`}>
         <MapContainerAny
-          key="india-map-permanent"
+          key={mapKey}
           center={[22.5, 80]}
           zoom={isMobile ? 4 : 4.5}
           style={{ 
@@ -547,20 +560,15 @@ const IndiaMap: React.FC = () => {
                 onMouseLeave={(e) => {
                   if (!isMobile) {
                     e.currentTarget.style.background = "rgba(255, 255, 255, 0.05)";
-                    e.currentTarget.style.transform = selectedState === state ? "translateX(-5px)" : "none";
+                    e.currentTarget.style.transform = "none";
                   }
                 }}
                 onClick={() => {
-                  const stateFeature = (data as any).features.find((f: any) => f.properties.ST_NM === state);
-                  if (stateFeature) {
-                    const bounds = L.geoJSON(stateFeature).getBounds();
-                    handleStateClick(stateFeature, bounds);
-                    if (isMobile) setShowMobilePanel(false);
-                  }
-                }}
-              >
-                <div style={{
-                  display: "flex",
+                  handleStateClick(state);
+                  if (isMobile) setShowMobilePanel(false);
+                }}>
+                <div style={{ 
+                  display: "flex", 
                   justifyContent: "space-between",
                   alignItems: "center",
                   marginBottom: "8px"

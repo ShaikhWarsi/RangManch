@@ -35,7 +35,6 @@ export default function RootLayout({
             {children}
             <ConnectionStatus />
             <RoleSwitcher />
-            <AIAssistant />
             <AICraftRecommender />
           </CartProvider>
         </AuthProvider>

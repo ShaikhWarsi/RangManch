@@ -1,5 +1,3 @@
-'use client'
-
 import StatePage from '@/components/StatePage'
 
 interface StatePageProps {

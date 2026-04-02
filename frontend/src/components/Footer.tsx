@@ -25,14 +25,14 @@ export const Footer: React.FC = () => {
   ];
 
   const categories = [
-    "Textiles & Fabrics",
-    "Handicrafts", 
-    "Jewelry",
-    "Home Decor",
-    "Spices & Food",
-    "Musical Instruments",
-    "Art & Paintings",
-    "Traditional Clothing"
+    { name: "Textiles & Fabrics", query: "sarees" },
+    { name: "Handicrafts", query: "pottery" },
+    { name: "Jewelry", query: "jewelry" },
+    { name: "Home Decor", query: "home" },
+    { name: "Spices & Food", query: "spices" },
+    { name: "Musical Instruments", query: "music" },
+    { name: "Art & Paintings", query: "paintings" },
+    { name: "Traditional Clothing", query: "clothing" }
   ];
 
   return (
@@ -77,15 +77,22 @@ export const Footer: React.FC = () => {
           
           {/* About Section */}
           <div>
-            <h3 style={{
-              fontFamily: 'Playfair Display',
-              fontSize: '1.5rem',
-              fontWeight: '600',
-              marginBottom: '20px',
-              color: defaultTheme.colors.ivory
-            }}>
-              Rangmanch
-            </h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+              <img 
+                src="/LOGO.png"
+                alt="Rangmanch Logo"
+                style={{ width: '88px', height: '88px', objectFit: 'contain' }}
+              />
+              <h3 style={{
+                fontFamily: 'Playfair Display',
+                fontSize: '1.5rem',
+                fontWeight: '600',
+                color: defaultTheme.colors.ivory,
+                margin: 0
+              }}>
+                Rangmanch
+              </h3>
+            </div>
             <p style={{
               fontFamily: 'Inter',
               fontSize: '0.95rem',
@@ -165,7 +172,7 @@ export const Footer: React.FC = () => {
               {categories.map((category, index) => (
                 <li key={index}>
                   <a 
-                    href={`/category/${category.toLowerCase().replace(/\s+/g, '-')}`}
+                    href={`/trade?category=${category.query}`}
                     style={{
                       color: defaultTheme.colors.ivory,
                       textDecoration: 'none',
@@ -185,7 +192,7 @@ export const Footer: React.FC = () => {
                       e.currentTarget.style.color = defaultTheme.colors.ivory;
                     }}
                   >
-                    {category}
+                    {category.name}
                   </a>
                 </li>
               ))}

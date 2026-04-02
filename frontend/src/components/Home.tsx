@@ -1,21 +1,21 @@
+'use client'
+
 import "../styles/Home.css";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from 'next/navigation';
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { ChevronRight, Quote, Shield, Award, Heart, Star } from "lucide-react";
 
-//images - using public folder paths
 const clouds_1 = "/HomePage/clouds_1.png";
 const clouds_2 = "/HomePage/clouds_2.png";
 const bg = "/HomePage/full.png";
 const fg = "/HomePage/man2.png";
 const ramayanBG = "/HomePage/ramayanBG.png";
 const ramayanFG = "/HomePage/ramayanFG.png";
-const arrowFG = "/HomePage/arrowFG.png";
-const arrowBGNew = "/HomePage/RamHoverBG_Large.png";
 const arrowRotate = "/HomePage/arrowRotate.png";
-const rathBG = "/HomePage/rathBG.png";
-const rathFG = "/HomePage/rathFG.png";
+
+const arrowBGNew = "/HomePage/RamHoverBG_Large.png";
 const flybird = "/HomePage/flybird.gif";
 
 import IndianNavbarFixed from "../components/IndianNavbarFixed";
@@ -24,177 +24,305 @@ import { Footer } from "../components/Footer";
 gsap.registerPlugin(ScrollTrigger);
 
 const Home: React.FC = () => {
-  const [arrowBGNew1, setRathBgSrc] = useState<any>(arrowBGNew);
-  const [imagesLoaded, setImagesLoaded] = useState<boolean>(false);
   const [showLoading, setShowLoading] = useState<boolean>(true);
-  const [loadingComplete, setLoadingComplete] = useState<boolean>(false);
+  const [loadingProgress, setLoadingProgress] = useState<number>(0);
+  const loadingRef = useRef<HTMLDivElement>(null);
+  const textRef = useRef<HTMLHeadingElement>(null);
   const router = useRouter();
 
-  const imageUrls: string[] = [
-    clouds_1,
-    clouds_2,
-    bg,
-    fg,
-    ramayanBG,
-    ramayanFG,
-    arrowFG,
-    arrowBGNew,
-    arrowRotate,
-    rathBG,
-    rathFG,
-    flybird
-  ];
-
-  // Preload images with timeout fallback
   useEffect(() => {
-    const RathBGImg = new Image();
-    RathBGImg.src = arrowBGNew;
-    RathBGImg.onload = () => {
-      setRathBgSrc(RathBGImg.src);
-    };
-
-    let loadedCount = 0;
-    const totalImages = imageUrls.length;
-
-    imageUrls.forEach((url) => {
-      const img = new Image();
-      img.src = url;
-      img.onload = () => {
-        loadedCount++;
-        if (loadedCount === totalImages) {
-          setImagesLoaded(true);
-        }
-      };
-      img.onerror = () => {
-        loadedCount++;
-        if (loadedCount === totalImages) {
-          setImagesLoaded(true);
-        }
-      };
+    const tl = gsap.timeline({
+      onComplete: () => {
+        setShowLoading(false);
+        document.body.style.overflow = 'auto';
+      }
     });
 
-    // Fallback timeout to ensure loading completes
-    const timeout = setTimeout(() => {
-      setImagesLoaded(true);
-      setShowLoading(false);
-      setLoadingComplete(true);
-    }, 3000); // 3 seconds fallback
+    tl.to(".loading-text", {
+      opacity: 1,
+      duration: 0.8,
+      ease: "power2.out"
+    })
+    .from(".loading-char", {
+      opacity: 0,
+      y: 50,
+      stagger: 0.08,
+      duration: 0.6,
+      ease: "power3.out"
+    })
+    .to(".loading-line", {
+      scaleX: 1,
+      duration: 1.2,
+      ease: "power2.inOut"
+    }, "-=0.3")
+    .to(".loading-content", {
+      opacity: 0,
+      y: -30,
+      duration: 0.6,
+      ease: "power2.in"
+    }, "+=0.5");
+
+    const progressInterval = setInterval(() => {
+      setLoadingProgress(prev => Math.min(prev + Math.random() * 15, 95));
+    }, 150);
+
+    setTimeout(() => {
+      clearInterval(progressInterval);
+      setLoadingProgress(100);
+    }, 2200);
 
     return () => {
-      clearTimeout(timeout);
+      tl.kill();
     };
   }, []);
 
-  // GSAP animations - simplified for better performance
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.to("#bg", {
-        scrollTrigger: {
-          scrub: 0.5,
-        },
-      });
-      gsap.to("#cloud2", {
-        x: -750,
-        scrollTrigger: {
-          scrub: 0.5,
-        },
-      });
-
-      gsap.to("#heading-h2", {
-        x: "100%",
-        scrollTrigger: {
-          trigger: "#heading",
-          scrub: 1,
-        },
-      });
-
-      gsap.to(".arrowBGNew", {
-        scale: 1.2,
-        scrollTrigger: {
-          trigger: ".section2",
-          scrub: 1,
-        },
-      });
-
-      gsap.to(".section2 #arrowRotate", {
-        scale: 1,
-        rotate: 360,
-        duration: 2.5,
-        scrollTrigger: {
-          trigger: ".section2",
-          scrub: true,
-        },
-      });
-
-      gsap.fromTo(
-        "#rathFG",
-        { x: 200 },
-        {
-          x: 0,
-          duration: 3,
+    if (!showLoading) {
+      const ctx = gsap.context(() => {
+        gsap.to("#cloud2", {
+          x: -750,
           scrollTrigger: {
-            trigger: ".section3",
-            scrub: 2,
+            trigger: "#top-section",
+            scrub: 0.5,
           },
-        }
-      );
+        });
 
-      gsap.to(".arrow", {
-        opacity: 0,
-        scrollTrigger: {
-          trigger: ".arrow",
-          start: "top center",
-          end: "50% center",
-          scrub: true,
-        },
+        gsap.to(".arrowBGNew", {
+          scale: 1.15,
+          scrollTrigger: {
+            trigger: ".section2",
+            scrub: 1,
+          },
+        });
+
+        gsap.to(".section2 #arrowRotate", {
+          rotate: 360,
+          duration: 8,
+          repeat: -1,
+          ease: "none",
+        });
+
+        gsap.fromTo(".stat-item", 
+          { opacity: 0, y: 40 },
+          { 
+            opacity: 1, 
+            y: 0, 
+            stagger: 0.15,
+            duration: 0.8,
+            scrollTrigger: {
+              trigger: "#brand-story",
+              start: "top 75%",
+            }
+          }
+        );
+
+        gsap.fromTo(".category-card", 
+          { opacity: 0, y: 60 },
+          { 
+            opacity: 1, 
+            y: 0, 
+            stagger: 0.12,
+            duration: 0.8,
+            scrollTrigger: {
+              trigger: "#categories",
+              start: "top 70%",
+            }
+          }
+        );
+
+        gsap.fromTo(".testimonial-card", 
+          { opacity: 0, x: -40 },
+          { 
+            opacity: 1, 
+            x: 0, 
+            stagger: 0.2,
+            duration: 0.8,
+            scrollTrigger: {
+              trigger: "#testimonials",
+              start: "top 70%",
+            }
+          }
+        );
+
+        gsap.fromTo(".feature-item", 
+          { opacity: 0, y: 30 },
+          { 
+            opacity: 1, 
+            y: 0, 
+            stagger: 0.1,
+            duration: 0.6,
+            scrollTrigger: {
+              trigger: "#features",
+              start: "top 75%",
+            }
+          }
+        );
       });
 
-      gsap.to("#bird5", {
-        x: -1400,
-        duration: 10,
-        repeat: -1,
-        repeatDelay: 0.5,
-        scrollTrigger: {
-          trigger: ".section2",
-          start: "top -35%",
-          end: "bottom 100%",
-        },
-      });
-    });
+      return () => ctx.revert();
+    }
+  }, [showLoading]);
 
-    return () => ctx.revert();
-  }, []);
+  const trustItems = [
+    { icon: Shield, text: "Verified Artisans" },
+    { icon: Award, text: "100% Handcrafted" },
+    { icon: Heart, text: "Lifetime Authenticity" },
+    { icon: Star, text: "Secure Payments" }
+  ];
 
-  const handleLoadingComplete = () => {
-    setShowLoading(false);
-    setLoadingComplete(true);
-  };
+  const categories = [
+    { 
+      name: "Handwoven Textiles", 
+      count: "240+ Pieces", 
+      subtitle: "Generations of weaving mastery",
+      description: "From the looms of Varanasi and Kanchipuram come silks that carry centuries of technique in every thread.",
+      image: "/IMAGES/L2G1.avif" 
+    },
+    { 
+      name: "Artisan Jewelry", 
+      count: "180+ Pieces", 
+      subtitle: "Treasures from ancient traditions",
+      description: "Kundan, Meenakari, and temple jewelry—each piece a conversation between past and present.",
+      image: "/IMAGES/l1g4.jpg" 
+    },
+    { 
+      name: "Ceremonial Pottery", 
+      count: "120+ Pieces", 
+      subtitle: "Earth, fire, and heritage",
+      description: "Blue pottery from Jaipur and terracotta from Bengal—artforms that predate the Mughal empire.",
+      image: "/IMAGES/L1G2.jpg" 
+    },
+    { 
+      name: "Miniature Paintings", 
+      count: "95+ Pieces", 
+      subtitle: "Stories painted in gold",
+      description: "Raja Ravi Varma's legacy lives on in these meticulous renderings of myth and royalty.",
+      image: "/IMAGES/L1G3.avif" 
+    }
+  ];
+
+  const testimonials = [
+    {
+      name: "Priya Sharma",
+      location: "Mumbai, Maharashtra",
+      quote: "The Banarasi saree I ordered for my daughter's wedding has become our family heirloom. The craftsmanship is beyond compare.",
+      artisan: "Monika Das",
+      craft: "Banarasi Silk Weaving",
+      rating: 5,
+      image: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=100&h=100&fit=crop"
+    },
+    {
+      name: "Ananya Reddy",
+      location: "Hyderabad, Telangana",
+      quote: "I've collected art from across India, but Rangmanch's pieces have a soul. The Kundan set I purchased is always the centerpiece of compliments.",
+      artisan: "Rahul Singh",
+      craft: "Kundan Jewelry",
+      rating: 5,
+      image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop"
+    },
+    {
+      name: "Meera Krishnan",
+      location: "Chennai, Tamil Nadu",
+      quote: "As someone who appreciates authentic craftsmanship, finding Rangmanch was like discovering a treasure trove. Every piece tells a story.",
+      artisan: "Lakshmi Ammal",
+      craft: "Kanjivaram Silk",
+      rating: 5,
+      image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop"
+    }
+  ];
+
+  const features = [
+    {
+      title: "Artisan Verification",
+      description: "Every artisan on Rangmanch is personally verified through video documentation of their craft process."
+    },
+    {
+      title: "Direct Sourcing",
+      description: "We work directly with artisan cooperatives, eliminating middlemen to ensure fair wages reach the creators."
+    },
+    {
+      title: "Cultural Preservation",
+      description: "A portion of every sale supports the preservation of endangered craft traditions through our NGO partnerships."
+    },
+    {
+      title: "Lifetime Guarantee",
+      description: "Each piece comes with a certificate of authenticity and a lifetime warranty against manufacturing defects."
+    }
+  ];
+
+  const stats = [
+    { number: "500+", label: "Master Artisans", sublabel: "Across 18 States" },
+    { number: "15,000+", label: "Happy Collectors", sublabel: "Worldwide Delivery" },
+    { number: "₹8.4L+", label: "Artisan Earnings", sublabel: "This Month Alone" },
+    { number: "400+", label: "Years of Heritage", sublabel: "Living Traditions" }
+  ];
 
   return (
     <div>
-      {/* Loading Screen */}
+      {/* Cinematic Loading Screen */}
       {showLoading && (
-        <div className="fixed inset-0 bg-ivory/90 flex items-center justify-center z-50">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-maroon border-t-transparent"></div>
-            <p className="mt-4 text-walnut font-ui">Loading RangManch...</p>
+        <div ref={loadingRef} className="fixed inset-0 bg-[#3E2F26] z-[9999] flex items-center justify-center">
+          <div className="loading-content text-center">
+            <h1 
+              ref={textRef}
+              className="loading-text opacity-0 mb-8"
+              style={{
+                fontFamily: "'Playfair Display', serif",
+                fontWeight: "900",
+                fontSize: "clamp(3rem, 12vw, 7rem)",
+                letterSpacing: "-0.03em",
+                color: "#F5EFE6",
+                lineHeight: "1"
+              }}
+            >
+              {"Rangmanch".split("").map((char, i) => (
+                <span key={i} className="loading-char inline-block" style={{ 
+                  display: char === ' ' ? 'inline' : 'inline-block',
+                  marginRight: char === ' ' ? '0.3em' : '0'
+                }}>
+                  {char}
+                </span>
+              ))}
+            </h1>
+            <div className="loading-line w-48 h-[2px] bg-[#C6A75E] mx-auto origin-left scale-x-0 mb-6" />
+            <p className="loading-text opacity-0 text-[#C6A75E] text-sm tracking-[0.3em] uppercase font-ui">
+              Heritage • Technology • Empowerment
+            </p>
+            <div className="mt-12 w-32 h-[2px] bg-[#6B1F2B] mx-auto origin-left scale-x-0 overflow-hidden">
+              <div 
+                className="h-full bg-[#C6A75E] transition-all duration-300"
+                style={{ width: `${loadingProgress}%` }}
+              />
+            </div>
           </div>
         </div>
       )}
 
       {/* Main Content */}
-      <div style={{ 
-        opacity: showLoading ? 0 : 1,
-        transition: 'opacity 0.5s ease',
-        visibility: showLoading ? 'hidden' : 'visible'
-      }}>
+      <div style={{ opacity: showLoading ? 0 : 1, transition: 'opacity 0.8s ease' }}>
         <IndianNavbarFixed />
-        
-        {/* Section 1: Top Section */}
+
+        {/* Trust Strip */}
+        <div className="bg-[#6B1F2B] py-3 px-4">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-center justify-center gap-6 md:gap-12 flex-wrap">
+              {trustItems.map((item, index) => (
+                <div key={index} className="flex items-center gap-2 text-[#F5EFE6]">
+                  <item.icon size={16} className="text-[#C6A75E]" />
+                  <span className="text-xs font-ui tracking-[0.15em] uppercase">{item.text}</span>
+                  {index < trustItems.length - 1 && (
+                    <span className="w-1 h-1 rounded-full bg-[#C6A75E] ml-4 opacity-50" />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Hero Section */}
         <section className="section" id="top-section">
           <img src={bg} id="bg" alt="bg" />
           
-          {/* Rangmanch Hero Text */}
           <div style={{
             position: "absolute",
             top: "17%",
@@ -240,17 +368,15 @@ const Home: React.FC = () => {
           <img src={clouds_2} style={{ position: "absolute" }} alt="cloud2" id="cloud2" />
         </section>
 
-        {/* Section 2: Ramayan Section */}
-        <section className="section1">
-          <img src={ramayanBG} id="rmynBG" alt="rmynBG" />
+        {/* Parallax Ramayan Section */}
+        <section className="section1 relative h-[100vh] overflow-hidden">
+          <img src={ramayanBG} id="rmynBG" alt="Ramayan Scene" className="absolute inset-0 w-full h-full object-cover" />
           
-          {/* Bird images */}
-          <img src={flybird} id="bird1" alt="bird" />
-          <img src={flybird} id="bird2" alt="bird" />
-          <img src={flybird} id="bird3" alt="bird" />
-          <img src={flybird} id="bird4" alt="bird" />
+          <img src={flybird} id="bird1" alt="bird" className="absolute w-[10vw] h-[20vh] top-[11%] right-[65%] z-[1] scale-x-[-1]" style={{ scale: '1.2' }} />
+          <img src={flybird} id="bird2" alt="bird" className="absolute w-[10vw] h-[20vh] top-[16%] right-[27%] z-[2] scale-x-[-1]" style={{ scale: '1.3' }} />
+          <img src={flybird} id="bird3" alt="bird" className="absolute w-[10vw] h-[20vh] top-[3%] right-[55%] z-[1]" />
+          <img src={flybird} id="bird4" alt="bird" className="absolute w-[10vw] h-[20vh] top-[8%] right-[38%] z-[1]" />
           
-          {/* Project Description */}
           <div style={{
             position: "absolute",
             right: "3%",
@@ -296,768 +422,384 @@ const Home: React.FC = () => {
             </p>
             <button 
               onClick={() => router.push("/trade")}
-              style={{
-                padding: "12px 30px",
-                background: "#C6A75E",
-                color: "#3E2F26",
-                border: "none",
-                borderRadius: "50px",
-                fontWeight: "700",
-                cursor: "pointer",
-                transition: "all 0.3s ease",
-                fontFamily: "Inter, sans-serif"
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(-3px)";
-                e.currentTarget.style.boxShadow = "0 10px 20px rgba(0,0,0,0.2)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow = "none";
-              }}
+              className="group relative px-8 py-3 bg-[#C6A75E] text-[#3E2F26] overflow-hidden transition-all duration-500 hover:bg-[#F5EFE6]"
             >
-              Shop the Collection
+              <span className="relative z-10 font-ui text-sm tracking-[0.15em] uppercase font-bold">
+                Shop the Collection
+              </span>
             </button>
           </div>
         </section>
 
-        {/* Feature Highlights Section */}
-        <section style={{
-          padding: "80px 20px",
-          background: "linear-gradient(135deg, #F5EFE6 0%, #D8CFC4 100%)",
-          position: "relative"
-        }}>
-          <div style={{
-            maxWidth: "1200px",
-            margin: "0 auto",
-            textAlign: "center"
-          }}>
-            <h2 style={{
-              fontSize: "3rem",
-              fontWeight: "800",
-              color: "#3E2F26",
-              marginBottom: "60px",
-              fontFamily: "Cormorant Garamond, serif"
-            }}>
-              Discover India's Living Heritage
+        {/* Mission Statement Section */}
+        <section className="py-32 px-6 bg-[#F5EFE6]">
+          <div className="max-w-4xl mx-auto text-center">
+            <span className="text-[#6B1F2B] text-xs tracking-[0.4em] uppercase font-ui block mb-6">
+              Our Mission
+            </span>
+            <h2 className="font-heading text-[#3E2F26] text-3xl md:text-5xl leading-tight mb-8">
+              Empowering <span className="text-[#6B1F2B] italic">7 million</span> rural artisans by bridging the gap between traditional craft and the global digital economy.
             </h2>
-            
-            <div style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-              gap: "40px",
-              marginBottom: "60px"
-            }}>
-              <div style={{
-                background: "white",
-                padding: "40px",
-                borderRadius: "20px",
-                boxShadow: "0 10px 30px rgba(62, 47, 38, 0.1)",
-                transition: "transform 0.3s ease, box-shadow 0.3s ease"
-              }}>
-                <div style={{
-                  fontSize: "3rem",
-                  marginBottom: "20px"
-                }}>
-                  🛍️
+            <div className="w-16 h-[2px] bg-[#C6A75E] mx-auto mb-8" />
+            <p className="text-[#3E2F26]/70 font-body text-lg leading-relaxed max-w-2xl mx-auto">
+              In a world of mass production, we stand apart. Rangmanch is a sanctuary for India's finest artisans—masters whose hands have learned their craft across generations, whose hearts carry the wisdom of ancient traditions. Each piece is not merely an object—it's a living testament to human artistry, patience, and devotion.
+            </p>
+          </div>
+        </section>
+
+        {/* Stats Section */}
+        <section id="brand-story" className="py-24 px-6 bg-[#6B1F2B]">
+          <div className="max-w-6xl mx-auto">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
+              {stats.map((stat, index) => (
+                <div key={index} className="stat-item text-center">
+                  <span 
+                    className="block text-[#C6A75E] text-4xl md:text-6xl font-heading font-bold mb-2"
+                    style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                  >
+                    {stat.number}
+                  </span>
+                  <span className="text-[#F5EFE6] text-xs tracking-[0.2em] uppercase block mb-1">
+                    {stat.label}
+                  </span>
+                  <span className="text-[#F5EFE6]/50 text-[10px] tracking-wider">
+                    {stat.sublabel}
+                  </span>
                 </div>
-                <h3 style={{
-                  fontSize: "1.5rem",
-                  fontWeight: "700",
-                  color: "#3E2F26",
-                  marginBottom: "15px",
-                  fontFamily: "Cormorant Garamond, serif"
-                }}>
-                  Shop Authentic Indian Crafts
-                </h3>
-                <p style={{
-                  color: "#6B1F2B",
-                  lineHeight: "1.6",
-                  fontSize: "1rem"
-                }}>
-                  Browse 15,000+ handcrafted products directly from master artisans. Every purchase preserves traditional techniques and supports sustainable livelihoods.
-                </p>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Brand Story Section */}
+        <section className="py-32 px-6 bg-[#F5EFE6]">
+          <div className="max-w-6xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-16 items-center">
+              <div className="relative">
+                <div className="aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl">
+                  <img
+                    src="/IMAGES/L1G1.webp"
+                    alt="Heritage craftsmanship"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div 
+                  className="absolute -bottom-8 -right-8 bg-[#3E2F26] text-[#F5EFE6] p-8 rounded-2xl max-w-[220px]"
+                  style={{ boxShadow: '0 25px 50px -12px rgba(62, 47, 38, 0.35)' }}
+                >
+                  <p 
+                    className="text-5xl font-heading font-bold text-[#C6A75E] mb-2"
+                    style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                  >
+                    400+
+                  </p>
+                  <p className="text-[10px] tracking-[0.2em] uppercase text-[#F5EFE6]/70">
+                    Years of Living Heritage
+                  </p>
+                  <div className="mt-4 pt-4 border-t border-[#F5EFE6]/20">
+                    <p className="text-xs italic text-[#F5EFE6]/80 leading-relaxed">
+                      "Every thread carries the wisdom of ancestors"
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              <div style={{
-                background: "white",
-                padding: "40px",
-                borderRadius: "20px",
-                boxShadow: "0 10px 30px rgba(62, 47, 38, 0.1)",
-                transition: "transform 0.3s ease, box-shadow 0.3s ease"
-              }}>
-                <div style={{
-                  fontSize: "3rem",
-                  marginBottom: "20px"
-                }}>
-                  👨‍🎨
-                </div>
-                <h3 style={{
-                  fontSize: "1.5rem",
-                  fontWeight: "700",
-                  color: "#3E2F26",
-                  marginBottom: "15px",
-                  fontFamily: "Cormorant Garamond, serif"
-                }}>
-                  Connect with Master Artisans
-                </h3>
-                <p style={{
-                  color: "#6B1F2B",
-                  lineHeight: "1.6",
-                  fontSize: "1rem"
-                }}>
-                  Discover the stories behind each craft. Learn from generations of master craftsmen and women through virtual workshops and live demonstrations.
+              <div>
+                <span className="text-[#6B1F2B] text-xs tracking-[0.4em] uppercase font-ui block mb-4">
+                  Our Philosophy
+                </span>
+                <h2 
+                  className="text-[#3E2F26] text-4xl md:text-5xl leading-[1.1] mb-6"
+                  style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                >
+                  Every Thread<br />
+                  <span className="text-[#6B1F2B] italic">Tells a Story</span>
+                </h2>
+                <div className="w-16 h-[2px] bg-[#C6A75E] mb-8" />
+                
+                <p className="text-[#3E2F26]/80 text-lg leading-[1.9] mb-6 font-body">
+                  In the villages of India, there exist masters of craft whose families have passed down techniques for centuries. These artisans are the keepers of living heritage—each piece they create carries forward a lineage of excellence.
                 </p>
-              </div>
+                <p className="text-[#3E2F26]/65 leading-[1.85] mb-10 font-body">
+                  When you acquire from Rangmanch, you don't just buy a product—you become part of a continuum that stretches back centuries. Your purchase directly supports these artisan families, ensuring their traditions survive and thrive in the modern world.
+                </p>
 
-              <div style={{
-                background: "white",
-                padding: "40px",
-                borderRadius: "20px",
-                boxShadow: "0 10px 30px rgba(62, 47, 38, 0.1)",
-                transition: "transform 0.3s ease, box-shadow 0.3s ease"
-              }}>
-                <div style={{
-                  fontSize: "3rem",
-                  marginBottom: "20px"
-                }}>
-                  🏛️
+                <div className="flex gap-12">
+                  <div>
+                    <span 
+                      className="block text-4xl text-[#6B1F2B] font-heading font-bold mb-1"
+                      style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                    >
+                      500+
+                    </span>
+                    <span className="text-[10px] tracking-[0.2em] uppercase text-[#3E2F26]/50">
+                      Artisan Partners
+                    </span>
+                  </div>
+                  <div>
+                    <span 
+                      className="block text-4xl text-[#6B1F2B] font-heading font-bold mb-1"
+                      style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                    >
+                      15,000+
+                    </span>
+                    <span className="text-[10px] tracking-[0.2em] uppercase text-[#3E2F26]/50">
+                      Happy Collectors
+                    </span>
+                  </div>
                 </div>
-                <h3 style={{
-                  fontSize: "1.5rem",
-                  fontWeight: "700",
-                  color: "#3E2F26",
-                  marginBottom: "15px",
-                  fontFamily: "Cormorant Garamond, serif"
-                }}>
-                  Preserve Heritage, Empower Communities
-                </h3>
-                <p style={{
-                  color: "#6B1F2B",
-                  lineHeight: "1.6",
-                  fontSize: "1rem"
-                }}>
-                  Join our mission to preserve India's cultural heritage. Every artisan partnership creates sustainable economic opportunities in rural communities.
-                </p>
               </div>
             </div>
+          </div>
+        </section>
 
-            <div style={{
-              textAlign: "center",
-              padding: "30px",
-              background: "rgba(198, 167, 94, 0.1)",
-              borderRadius: "15px",
-              border: "2px solid #C6A75E"
-            }}>
-              <p style={{
-                fontSize: "1.2rem",
-                color: "#3E2F26",
-                fontWeight: "600",
-                marginBottom: "20px"
-              }}>
-                Ready to be part of the heritage revolution?
+        {/* Categories Section */}
+        <section id="categories" className="py-32 px-6 bg-[#3E2F26]/5">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-16">
+              <span className="text-[#6B1F2B] text-xs tracking-[0.4em] uppercase font-ui block mb-4">
+                Curated Collections
+              </span>
+              <h2 
+                className="text-[#3E2F26] text-4xl md:text-5xl"
+                style={{ fontFamily: "'Cormorant Garamond', serif" }}
+              >
+                Explore By Craft
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {categories.map((category, index) => (
+                <div 
+                  key={index} 
+                  className="category-card group relative aspect-[3/4] rounded-3xl overflow-hidden cursor-pointer"
+                >
+                  <img
+                    src={category.image}
+                    alt={category.name}
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#3E2F26]/95 via-[#3E2F26]/60 to-transparent" />
+                  
+                  <div className="absolute inset-0 p-6 flex flex-col justify-end transition-all duration-500 group-hover:justify-start group-hover:pt-12">
+                    <span className="text-[#C6A75E] text-[10px] tracking-[0.25em] uppercase mb-2">
+                      {category.count}
+                    </span>
+                    <h3 
+                      className="text-[#F5EFE6] text-xl mb-2"
+                      style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                    >
+                      {category.name}
+                    </h3>
+                    <p className="text-[#F5EFE6]/70 text-xs mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                      {category.subtitle}
+                    </p>
+                    <p className="text-[#F5EFE6]/60 text-xs leading-relaxed opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0 mb-4">
+                      {category.description}
+                    </p>
+                    <div className="flex items-center gap-2 text-[#C6A75E] text-xs tracking-wider opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0">
+                      <span className="font-ui uppercase">View Collection</span>
+                      <ChevronRight size={14} />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Heritage Parallax Section */}
+        <section className="relative h-[100vh] overflow-hidden">
+          <img 
+            src="/IMAGES/L1G3.avif" 
+            alt="Indian Heritage" 
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#3E2F26]/60 to-transparent" />
+          <div className="absolute inset-0 flex items-center">
+            <div className="max-w-2xl px-16">
+              <span className="text-[#C6A75E] text-xs tracking-[0.4em] uppercase font-ui block mb-4">
+                Timeless Elegance
+              </span>
+              <h2 
+                className="text-[#F5EFE6] text-4xl md:text-6xl leading-tight mb-6"
+                style={{ fontFamily: "'Cormorant Garamond', serif" }}
+              >
+                Where Tradition<br />
+                <span className="italic">Meets Modernity</span>
+              </h2>
+              <p className="text-[#F5EFE6]/80 text-lg leading-relaxed mb-8">
+                Discover the finest handcrafted pieces that carry the legacy of generations of master artisans.
               </p>
               <button 
                 onClick={() => router.push("/trade")}
-                style={{
-                  padding: "15px 40px",
-                  background: "#C6A75E",
-                  color: "#3E2F26",
-                  border: "none",
-                  borderRadius: "50px",
-                  fontWeight: "700",
-                  fontSize: "1.1rem",
-                  cursor: "pointer",
-                  transition: "all 0.3s ease",
-                  marginRight: "15px"
-                }}
+                className="px-8 py-3 bg-[#C6A75E] text-[#3E2F26] font-ui text-sm tracking-[0.15em] uppercase font-bold rounded-full hover:bg-[#F5EFE6] transition-colors"
               >
-                Start Shopping
-              </button>
-              <button 
-                onClick={() => router.push("/artisans")}
-                style={{
-                  padding: "15px 40px",
-                  background: "transparent",
-                  color: "#3E2F26",
-                  border: "2px solid #C6A75E",
-                  borderRadius: "50px",
-                  fontWeight: "700",
-                  fontSize: "1.1rem",
-                  cursor: "pointer",
-                  transition: "all 0.3s ease"
-                }}
-              >
-                Meet Artisans
+                Explore Collection
               </button>
             </div>
           </div>
         </section>
 
-        {/* Section 3: Arrow Section */}
-        <section className="section2">
-          <img src={arrowBGNew1} id="arrowBG123" className="arrowBGNew" alt="Arrow BG Sky" />
-          <img src={arrowRotate} id="arrowRotate" alt="arrowRotate" />
-          <img src={arrowFG} id="arrowFG" alt="arrowFG" />
+        {/* Arrow/Chakra Parallax Section */}
+        <section className="section2 relative h-[100vh] overflow-hidden">
+          <img src={arrowBGNew} id="arrowBG123" className="arrowBGNew absolute inset-0 w-full h-full object-cover" alt="Sky Background" />
+          <img src={arrowRotate} id="arrowRotate" alt="Rotating Chakra" className="absolute w-[45%] top-[2.5vh] left-[27.5%] z-10" />
+         
         </section>
 
-        {/* Section 4: Rath Section */}
-        <section className="section3">
-          <img src={rathBG} id="rathBG" alt="rathBG" />
-          <img src={rathFG} id="rathFG" alt="rathFG" />
-        </section>
-
-        {/* RANGMANCH PLATFORM FEATURES SECTIONS */}
-        <div className="sec" style={{
-          background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
-          color: "white",
-          padding: "80px 40px",
-          margin: "0",
-          position: "relative",
-          overflow: "hidden"
-        }}>
-          <div style={{
-            position: "absolute",
-            top: "0",
-            right: "0",
-            width: "300px",
-            height: "300px",
-            background: "radial-gradient(circle, rgba(56, 189, 248, 0.1) 0%, transparent 70%)",
-            borderRadius: "50%"
-          }}></div>
-          
-          <div id="my-footer">
-          <Footer />
-        </div>
-          
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-            gap: "40px",
-            maxWidth: "1200px",
-            margin: "0 auto"
-          }}>
-            <div className="feature-card" style={{
-              background: "rgba(30, 41, 59, 0.7)",
-              padding: "40px 30px",
-              borderRadius: "20px",
-              border: "1px solid rgba(56, 189, 248, 0.2)",
-              backdropFilter: "blur(10px)",
-              transition: "transform 0.3s ease"
-            }}>
-              <div style={{
-                width: "70px",
-                height: "70px",
-                background: "linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%)",
-                borderRadius: "15px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: "25px"
-              }}>
-                <span style={{ fontSize: "30px" }}>🗺️</span>
-              </div>
-              <h3 style={{
-                fontSize: "1.8rem",
-                fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
-                marginBottom: "15px",
-                color: "#f8fafc"
-              }}>
-                Interactive Dance Maps
-              </h3>
-              <p style={{
-                fontSize: "1.1rem",
-                lineHeight: "1.6",
-                color: "#cbd5e1",
-                marginBottom: "20px"
-              }}>
-                Explore India's cultural geography through clickable Leaflet.js maps. 
-                Each region reveals multimedia dossiers of traditional costumes, 
-                music archives, and live artisan demonstrations.
-              </p>
-              <div style={{
-                display: "inline-block",
-                padding: "8px 20px",
-                background: "rgba(56, 189, 248, 0.1)",
-                border: "1px solid rgba(56, 189, 248, 0.3)",
-                borderRadius: "20px",
-                fontSize: "0.9rem",
-                color: "#38bdf8"
-              }}>
-                Powered by Leaflet.js API
-              </div>
-            </div>
-
-            <div className="feature-card" style={{
-              background: "rgba(30, 41, 59, 0.7)",
-              padding: "40px 30px",
-              borderRadius: "20px",
-              border: "1px solid rgba(139, 92, 246, 0.2)",
-              backdropFilter: "blur(10px)",
-              transition: "transform 0.3s ease"
-            }}>
-              <div style={{
-                width: "70px",
-                height: "70px",
-                background: "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)",
-                borderRadius: "15px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: "25px"
-              }}>
-                <span style={{ fontSize: "30px" }}>🤖</span>
-              </div>
-              <h3 style={{
-                fontSize: "1.8rem",
-                fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
-                marginBottom: "15px",
-                color: "#f8fafc"
-              }}>
-                Veda AI Curator
-              </h3>
-              <p style={{
-                fontSize: "1.1rem",
-                lineHeight: "1.6",
-                color: "#cbd5e1",
-                marginBottom: "20px"
-              }}>
-                Conversational AI that transforms static history into interactive 
-                learning. Ask about Bharatanatyam mudras or Rajasthani folk 
-                instruments and receive contextual, branch-based responses.
-              </p>
-              <div style={{
-                display: "inline-block",
-                padding: "8px 20px",
-                background: "rgba(139, 92, 246, 0.1)",
-                border: "1px solid rgba(139, 92, 246, 0.3)",
-                borderRadius: "20px",
-                fontSize: "0.9rem",
-                color: "#8b5cf6"
-              }}>
-                AI-Powered Dialogue System
-              </div>
-            </div>
-
-            <div className="feature-card" style={{
-              background: "rgba(30, 41, 59, 0.7)",
-              padding: "40px 30px",
-              borderRadius: "20px",
-              border: "1px solid rgba(34, 197, 94, 0.2)",
-              backdropFilter: "blur(10px)",
-              transition: "transform 0.3s ease"
-            }}>
-              <div style={{
-                width: "70px",
-                height: "70px",
-                background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-                borderRadius: "15px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: "25px"
-              }}>
-                <span style={{ fontSize: "30px" }}>📦</span>
-              </div>
-              <h3 style={{
-                fontSize: "1.8rem",
-                fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
-                marginBottom: "15px",
-                color: "#f8fafc"
-              }}>
-                Story of the Product
-              </h3>
-              <p style={{
-                fontSize: "1.1rem",
-                lineHeight: "1.6",
-                color: "#cbd5e1",
-                marginBottom: "20px"
-              }}>
-                Every artifact includes immutable provenance tracking. Scan QR 
-                codes to view artisan profiles, raw material origins, and the 
-                complete journey from rural workshop to your home.
-              </p>
-              <div style={{
-                display: "inline-block",
-                padding: "8px 20px",
-                background: "rgba(34, 197, 94, 0.1)",
-                border: "1px solid rgba(34, 197, 94, 0.3)",
-                borderRadius: "20px",
-                fontSize: "0.9rem",
-                color: "#10b981"
-              }}>
-                Blockchain-Verified Provenance
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Section 2: Artisan Empowerment */}
-        <div className="sec" style={{
-          background: "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)",
-          padding: "80px 40px",
-          position: "relative",
-          overflow: "hidden"
-        }}>
-          <div style={{
-            position: "absolute",
-            top: "-100px",
-            left: "-100px",
-            width: "400px",
-            height: "400px",
-            background: "radial-gradient(circle, rgba(245, 158, 11, 0.1) 0%, transparent 70%)",
-            borderRadius: "50%"
-          }}></div>
-          
-          <div style={{
-            maxWidth: "1200px",
-            margin: "0 auto",
-            display: "flex",
-            alignItems: "center",
-            gap: "60px",
-            flexWrap: "wrap"
-          }}>
-            <div style={{ flex: "1", minWidth: "300px" }}>
-              <h2 style={{
-                fontSize: "3rem",
-                fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif",
-                fontWeight: "800",
-                color: "#78350f",
-                marginBottom: "30px"
-              }}>
-                Empowering 7M+ Rural Artisans
+        {/* Features Section */}
+        <section id="features" className="py-32 px-6 bg-[#F5EFE6]">
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-16">
+              <span className="text-[#6B1F2B] text-xs tracking-[0.4em] uppercase font-ui block mb-4">
+                The Rangmanch Difference
+              </span>
+              <h2 
+                className="text-[#3E2F26] text-4xl md:text-5xl"
+                style={{ fontFamily: "'Cormorant Garamond', serif" }}
+              >
+                Why Choose Authentic
               </h2>
-              <p style={{
-                fontSize: "1.2rem",
-                lineHeight: "1.7",
-                color: "#92400e",
-                marginBottom: "30px"
-              }}>
-                We eliminate predatory intermediaries by providing direct 
-                digital storefronts to rural creators. Our NGO-managed 
-                architecture bridges the digital literacy gap, ensuring 
-                even non-tech-savvy artisans can access global markets.
-              </p>
-              
-              <div style={{
-                display: "flex",
-                gap: "20px",
-                flexWrap: "wrap"
-              }}>
-                <div style={{
-                  background: "white",
-                  padding: "20px",
-                  borderRadius: "15px",
-                  flex: "1",
-                  minWidth: "200px"
-                }}>
-                  <div style={{ fontSize: "2.5rem", fontWeight: "bold", color: "#d97706", marginBottom: "10px" }}>30-40%</div>
-                  <div style={{ color: "#78350f", fontSize: "0.9rem" }}>Increased Income</div>
-                </div>
-                <div style={{
-                  background: "white",
-                  padding: "20px",
-                  borderRadius: "15px",
-                  flex: "1",
-                  minWidth: "200px"
-                }}>
-                  <div style={{ fontSize: "2.5rem", fontWeight: "bold", color: "#d97706", marginBottom: "10px" }}>7M+</div>
-                  <div style={{ color: "#78350f", fontSize: "0.9rem" }}>Artisans Reached</div>
-                </div>
-                <div style={{
-                  background: "white",
-                  padding: "20px",
-                  borderRadius: "15px",
-                  flex: "1",
-                  minWidth: "200px"
-                }}>
-                  <div style={{ fontSize: "2.5rem", fontWeight: "bold", color: "#d97706", marginBottom: "10px" }}>0%</div>
-                  <div style={{ color: "#78350f", fontSize: "0.9rem" }}>Middleman Commissions</div>
-                </div>
-              </div>
             </div>
-            
-            <div style={{
-              flex: "1",
-              minWidth: "300px",
-              background: "white",
-              borderRadius: "20px",
-              overflow: "hidden",
-              boxShadow: "0 20px 60px rgba(120, 53, 15, 0.1)"
-            }}>
-              <img 
-                src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                alt="Artisan at work"
-                style={{ width: "100%", height: "300px", objectFit: "cover" }}
-              />
-              <div style={{ padding: "30px" }}>
-                <h3 style={{
-                  fontSize: "1.5rem",
-                  fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
-                  color: "#78350f",
-                  marginBottom: "15px"
-                }}>
-                  NGO-Facilitated Digital Onboarding
-                </h3>
-                <p style={{ color: "#92400e", lineHeight: "1.6" }}>
-                  Local organizations act as digital ambassadors, managing 
-                  inventory, quality checks, and logistics for remote artisans.
-                </p>
-              </div>
+
+            <div className="grid md:grid-cols-2 gap-x-16 gap-y-12">
+              {features.map((feature, index) => (
+                <div key={index} className="feature-item flex gap-5">
+                  <div className="flex-shrink-0 w-12 h-12 rounded-full bg-[#6B1F2B] flex items-center justify-center">
+                    <span className="text-[#C6A75E] font-heading text-lg font-bold">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                  </div>
+                  <div>
+                    <h3 
+                      className="text-[#3E2F26] text-xl mb-2"
+                      style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                    >
+                      {feature.title}
+                    </h3>
+                    <p className="text-[#3E2F26]/65 text-sm leading-relaxed">
+                      {feature.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Section 3: Youth Engagement */}
-        <div className="sec" style={{
-          background: "linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)",
-          padding: "80px 40px",
-          position: "relative"
-        }}>
-          <div style={{
-            maxWidth: "1200px",
-            margin: "0 auto"
-          }}>
-            <h2 style={{
-              textAlign: "center",
-              fontSize: "3rem",
-              fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif",
-              fontWeight: "800",
-              color: "#065f46",
-              marginBottom: "60px"
-            }}>
-              Culture Reimagined for Gen-Z
-            </h2>
-            
-            <div style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-              gap: "30px",
-              marginBottom: "60px"
-            }}>
-              <div style={{
-                background: "white",
-                padding: "30px",
-                borderRadius: "20px",
-                textAlign: "center",
-                boxShadow: "0 10px 30px rgba(6, 95, 70, 0.1)"
-              }}>
-                <div style={{ fontSize: "3rem", marginBottom: "20px" }}>🎮</div>
-                <h3 style={{ fontSize: "1.5rem", color: "#065f46", marginBottom: "15px" }}>Gamified Learning</h3>
-                <p style={{ color: "#047857" }}>Earn badges by completing cultural challenges and mastering traditional skills</p>
-              </div>
-              <div style={{
-                background: "white",
-                padding: "30px",
-                borderRadius: "20px",
-                textAlign: "center",
-                boxShadow: "0 10px 30px rgba(6, 95, 70, 0.1)"
-              }}>
-                <div style={{ fontSize: "3rem", marginBottom: "20px" }}>🎬</div>
-                <h3 style={{ fontSize: "1.5rem", color: "#065f46", marginBottom: "15px" }}>Community Clips</h3>
-                <p style={{ color: "#047857" }}>Short-form video platform for artisans to share making-of content</p>
-              </div>
-              <div style={{
-                background: "white",
-                padding: "30px",
-                borderRadius: "20px",
-                textAlign: "center",
-                boxShadow: "0 10px 30px rgba(6, 95, 70, 0.1)"
-              }}>
-                <div style={{ fontSize: "3rem", marginBottom: "20px" }}>🎓</div>
-                <h3 style={{ fontSize: "1.5rem", color: "#065f46", marginBottom: "15px" }}>Virtual Apprenticeships</h3>
-                <p style={{ color: "#047857" }}>Live sessions with master artisans through interactive video streams</p>
-              </div>
+        {/* Testimonials Section */}
+        <section id="testimonials" className="py-32 px-6 bg-[#6B1F2B] overflow-hidden">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-16">
+              <span className="text-[#C6A75E] text-xs tracking-[0.4em] uppercase font-ui block mb-4">
+                Collector Stories
+              </span>
+              <h2 
+                className="text-[#F5EFE6] text-4xl md:text-5xl"
+                style={{ fontFamily: "'Cormorant Garamond', serif" }}
+              >
+                Voices of Appreciation
+              </h2>
             </div>
-            
-            <div style={{
-              background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-              borderRadius: "20px",
-              padding: "50px",
-              color: "white",
-              textAlign: "center"
-            }}>
-              <h3 style={{
-                fontSize: "2rem",
-                fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
-                marginBottom: "20px"
-              }}>
-                Stemming the Brain Drain
-              </h3>
-              <p style={{
-                fontSize: "1.2rem",
-                lineHeight: "1.7",
-                maxWidth: "800px",
-                margin: "0 auto"
-              }}>
-                By providing modern digital livelihoods and global visibility, 
-                we're creating economic incentives for youth to preserve ancestral 
-                skills rather than migrate to urban centers.
-              </p>
-            </div>
-          </div>
-        </div>
 
-        {/* Section 4: Tech Stack & Future Vision */}
-        <div className="sec" style={{
-          background: "linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)",
-          color: "white",
-          padding: "80px 40px",
-          position: "relative"
-        }}>
-          <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-            <div style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "60px",
-              flexWrap: "wrap",
-              marginBottom: "60px"
-            }}>
-              <div style={{ flex: "1", minWidth: "300px" }}>
-                <h2 style={{
-                  fontSize: "3rem",
-                  fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif",
-                  fontWeight: "800",
-                  marginBottom: "30px",
-                  background: "linear-gradient(90deg, #8b5cf6 0%, #6366f1 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text"
-                }}>
-                  Sovereign Tech Stack
-                </h2>
-                <p style={{
-                  fontSize: "1.2rem",
-                  lineHeight: "1.7",
-                  color: "#c7d2fe",
-                  marginBottom: "30px"
-                }}>
-                  Built entirely on indigenous technology, Rangmanch represents 
-                  India's commitment to digital sovereignty and self-reliance in 
-                  preserving cultural heritage.
-                </p>
-                
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "15px" }}>
-                  {["React.js", "Express.js", "MongoDB", "Firebase", "Leaflet.js", "H5P"].map(tech => (
-                    <div key={tech} style={{
-                      padding: "10px 20px",
-                      background: "rgba(139, 92, 246, 0.2)",
-                      border: "1px solid rgba(139, 92, 246, 0.4)",
-                      borderRadius: "10px",
-                      fontSize: "0.9rem"
-                    }}>{tech}</div>
-                  ))}
-                </div>
-              </div>
-              
-              <div style={{
-                flex: "1",
-                minWidth: "300px",
-                background: "rgba(255, 255, 255, 0.05)",
-                borderRadius: "20px",
-                padding: "40px",
-                backdropFilter: "blur(10px)",
-                border: "1px solid rgba(255, 255, 255, 0.1)"
-              }}>
-                <h3 style={{ fontSize: "1.8rem", marginBottom: "20px", color: "#e0e7ff" }}>Future Roadmap</h3>
-                <ul style={{ listStyle: "none", padding: "0" }}>
-                  {[
-                    { q: "Q1", text: "Pan-India expansion to all 28 states & 8 UTs" },
-                    { q: "Q2", text: "DigiLocker integration for digital artisan certificates" },
-                    { q: "Q3", text: "B2B licensing to museums, schools & tourism boards" }
-                  ].map((item, idx) => (
-                    <li key={idx} style={{
-                      padding: "15px 0",
-                      borderBottom: idx < 2 ? "1px solid rgba(255, 255, 255, 0.1)" : "none",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "15px"
-                    }}>
-                      <div style={{
-                        width: "30px",
-                        height: "30px",
-                        background: "linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)",
-                        borderRadius: "50%",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "0.8rem",
-                        color: "white"
-                      }}>{item.q}</div>
-                      <span>{item.text}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-            
-            <div style={{
-              textAlign: "center",
-              marginTop: "60px",
-              padding: "60px",
-              background: "rgba(255, 255, 255, 0.05)",
-              borderRadius: "20px",
-              border: "1px solid rgba(255, 255, 255, 0.1)"
-            }}>
-              <h3 style={{
-                fontSize: "2.5rem",
-                fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif",
-                fontWeight: "800",
-                marginBottom: "20px",
-                background: "linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text"
-              }}>
-                Join the Digital Heritage Revolution
-              </h3>
-              <p style={{
-                fontSize: "1.2rem",
-                color: "#c7d2fe",
-                maxWidth: "800px",
-                margin: "0 auto 40px",
-                lineHeight: "1.7"
-              }}>
-                Whether you're an artisan seeking global reach, a cultural 
-                enthusiast wanting to learn, or an organization looking to 
-                collaborate—there's a place for you in the Rangmanch ecosystem.
-              </p>
-              <div style={{ display: "flex", gap: "20px", justifyContent: "center", flexWrap: "wrap" }}>
-                <button 
-                  onClick={() => router.push('/login')}
-                  style={{
-                    padding: "15px 40px",
-                    background: "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)",
-                    border: "none",
-                    borderRadius: "50px",
-                    color: "white",
-                    fontSize: "1.1rem",
-                    fontWeight: "600",
-                    cursor: "pointer",
-                    transition: "transform 0.3s ease",
-                    boxShadow: "0 10px 25px -5px rgba(139, 92, 246, 0.4)"
-                  }}
+            <div className="grid md:grid-cols-3 gap-8">
+              {testimonials.map((testimonial, index) => (
+                <div 
+                  key={index}
+                  className="testimonial-card bg-[#F5EFE6]/5 backdrop-blur-sm rounded-3xl p-8 border border-[#F5EFE6]/10"
                 >
-                  Explore Marketplace
-                </button>
-                <button style={{
-                  padding: "15px 40px",
-                  background: "transparent",
-                  border: "2px solid #8b5cf6",
-                  borderRadius: "50px",
-                  color: "#8b5cf6",
-                  fontSize: "1.1rem",
-                  fontWeight: "600",
-                  cursor: "pointer",
-                  transition: "all 0.3s ease"
-                }}>
-                  View Cultural Archive
-                </button>
-              </div>
+                  <Quote className="w-8 h-8 text-[#C6A75E] mb-6" />
+                  
+                  <div className="flex gap-1 mb-4">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star key={i} size={12} className="text-[#C6A75E] fill-current" />
+                    ))}
+                  </div>
+                  
+                  <p className="text-[#F5EFE6]/90 text-sm leading-relaxed mb-6 italic">
+                    "{testimonial.quote}"
+                  </p>
+                  
+                  <div className="flex items-center gap-4 pt-4 border-t border-[#F5EFE6]/10">
+                    <img
+                      src={testimonial.image}
+                      alt={testimonial.name}
+                      className="w-12 h-12 rounded-full object-cover"
+                    />
+                    <div>
+                      <p className="text-[#F5EFE6] text-sm font-ui font-semibold">
+                        {testimonial.name}
+                      </p>
+                      <p className="text-[#F5EFE6]/50 text-xs">
+                        {testimonial.location}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 pt-4 border-t border-[#F5EFE6]/10">
+                    <p className="text-[#C6A75E] text-[10px] tracking-[0.15em] uppercase mb-1">
+                      Artisan
+                    </p>
+                    <p className="text-[#F5EFE6]/80 text-sm">
+                      {testimonial.artisan}
+                    </p>
+                    <p className="text-[#F5EFE6]/50 text-xs">
+                      {testimonial.craft}
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-        </div>
+        </section>
 
+        {/* CTA Section */}
+        <section className="py-32 px-6 bg-[#F5EFE6] relative overflow-hidden">
+          <div 
+            className="absolute inset-0 opacity-10"
+            style={{
+              backgroundImage: `url("/IMAGES/seamless-traditional-indian-textile-floral-border-pattern-motif-vector-carpet-abstract-geometric-fa_715993-40.avif")`,
+              backgroundSize: '200px'
+            }}
+          />
+          
+          <div className="relative max-w-3xl mx-auto text-center">
+            <span className="text-[#6B1F2B] text-xs tracking-[0.4em] uppercase font-ui block mb-6">
+              Begin Your Journey
+            </span>
+            <h2 
+              className="text-[#3E2F26] text-4xl md:text-6xl leading-tight mb-6"
+              style={{ fontFamily: "'Cormorant Garamond', serif" }}
+            >
+              Own a Piece of<br />
+              <span className="text-[#6B1F2B] italic">Living Heritage</span>
+            </h2>
+            <p className="text-[#3E2F26]/65 text-lg leading-relaxed mb-10 max-w-xl mx-auto">
+              Each Rangmanch creation carries the soul of its maker—the dedication of generations poured into a single, extraordinary piece.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button 
+                onClick={() => router.push("/trade")}
+                className="group relative px-12 py-5 bg-[#6B1F2B] text-[#F5EFE6] overflow-hidden transition-all duration-500 hover:bg-[#3E2F26]"
+              >
+                <span className="relative z-10 font-ui text-sm tracking-[0.2em] uppercase">
+                  Shop the Collection
+                </span>
+              </button>
+              
+              <button 
+                onClick={() => router.push("/india")}
+                className="px-12 py-5 bg-transparent border-2 border-[#3E2F26] text-[#3E2F26] font-ui text-sm tracking-[0.2em] uppercase transition-all duration-300 hover:bg-[#3E2F26] hover:text-[#F5EFE6] hover:border-[#3E2F26]"
+              >
+                Explore Cultural Map
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* Footer */}
         <div id="my-footer">
           <Footer />
         </div>

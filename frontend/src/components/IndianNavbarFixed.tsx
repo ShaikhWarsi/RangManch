@@ -78,15 +78,15 @@ const IndianNavbarFixed: React.FC = () => {
     <>
       <nav
         className={`
-          fixed top-6 left-1/2 -translate-x-1/2 z-[3000] 
+          fixed top-0 left-1/2 -translate-x-1/2 z-[3000] 
           transition-all duration-500 ease-in-out
           flex items-center
           px-6 py-3 md:px-10 md:py-4
-          rounded-full border border-white/20
+          rounded-b-3xl border border-white/20
           backdrop-blur-md
           ${isScrolled 
             ? 'bg-white/90 w-[92%] max-w-[1100px] shadow-premium transition-all duration-500' 
-            : 'bg-white/40 w-[95%] max-w-[1300px] transition-all duration-500'
+            : 'bg-white/40 w-[100%] max-w-full transition-all duration-500'
           }
         `}
       >
@@ -95,17 +95,11 @@ const IndianNavbarFixed: React.FC = () => {
           onClick={() => router.push("/")}
           className="cursor-pointer flex items-center gap-3 group transition-transform duration-300 hover:scale-[1.02]"
         >
-          <div className="
-            w-10 h-10 md:w-11 md:h-11
-            rounded-full bg-maroon
-            flex items-center justify-center
-            text-ivory font-heading
-            text-xl md:text-2xl
-            shadow-premium transition-all duration-300
-            group-hover:shadow-premium-hover group-hover:-rotate-12
-          ">
-            R
-          </div>
+          <img 
+            src="/LOGO.png"
+            alt="Rangmanch Logo"
+            className="w-16 h-16 md:w-20 md:h-20 object-contain"
+          />
           <div className="flex flex-col">
             <span className="font-heading text-lg md:text-xl leading-none text-walnut">
               Rangmanch

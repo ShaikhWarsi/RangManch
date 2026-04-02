@@ -42,6 +42,10 @@ const nextConfig = {
   turbopack: {
     root: process.cwd(),
   },
+  // Handle client components with static export
+  experimental: {
+    missingSuspenseWithCSRBug: true,
+  },
 };
 
 module.exports = nextConfig;

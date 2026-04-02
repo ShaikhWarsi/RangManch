@@ -128,12 +128,6 @@ const IndiaMap: React.FC = () => {
   const [hoveredState, setHoveredState] = useState<string | null>(null);
   const [showMobilePanel, setShowMobilePanel] = useState(false);
   const mapRef = useRef<any>(null);
-  const [mapKey, setMapKey] = useState(0);
-  
-  // Force map re-initialization when mobile state changes
-  useEffect(() => {
-    setMapKey(prev => prev + 1);
-  }, [isMobile]);
   
   // Cultural heritage info for each state
   const stateHeritageInfo: StateHeritageMap = {
@@ -342,9 +336,8 @@ const IndiaMap: React.FC = () => {
       </div>
 
       {/* Map Container */}
-      <div key={`map-wrapper-${isMobile ? 'mobile' : 'desktop'}`}>
+      <div>
         <MapContainerAny
-          key={mapKey}
           center={[22.5, 80]}
           zoom={isMobile ? 4 : 4.5}
           style={{ 

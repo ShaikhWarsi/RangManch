@@ -1,292 +1,174 @@
 import { Router } from "express";
-import {
-  getProducts,
-  createProduct,
-  getProductsByArtisan,
-  deleteProduct,
-  addProductReview
-} from "../controllers/productController";
-import {
-  getStates,
-  deleteAllStates,
-  createState,
-  getStateByName,
-  deleteState,
-  updateState
-} from "../controllers/stateController";
-import {
-  validateProduct,
-  validateReview,
-  validateState,
-  validateMongoId,
-  validateStateName
-} from "../middleware/validation";
-import { MongoClient } from 'mongodb';
-import Razorpay from 'razorpay';
+import supabase from "../db";
 
 const router = Router();
 
-// Razorpay configuration
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_1234567890abcdef',
-  key_secret: process.env.RAZORPAY_KEY_SECRET || 'test_1234567890abcdef',
+router.get("/health", async (req: any, res: any) => {
+  res.json({ status: "ok", timestamp: new Date().toISOString(), service: "RangManch API" });
 });
 
-// Product Routes
-router.get("/products", getProducts);
-router.post("/products", validateProduct, createProduct);
-router.get("/products/artisan/:artisanId", validateStateName, getProductsByArtisan);
-router.delete("/products/:id", validateMongoId, deleteProduct);
-router.post("/products/:id/reviews", validateMongoId, validateReview, addProductReview);
+const initTables = async () => {
+  try {
+    await supabase.rpc('exec', {
+      query: `
+        CREATE TABLE IF NOT EXISTS products (
+          id SERIAL PRIMARY KEY,
+          name VARCHAR(255) NOT NULL,
+          description TEXT,
+          price DECIMAL(10, 2) NOT NULL,
+          category VARCHAR(100),
+          craft VARCHAR(100),
+          artisan_id VARCHAR(100),
+          images TEXT[],
+          in_stock BOOLEAN DEFAULT true,
+          rating DECIMAL(3, 2),
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `
+    });
+    console.log("Database tables initialized");
+  } catch (error) {
+    console.log("Tables may already exist:", error);
+  }
+};
 
-// State Routes
-router.get("/states", getStates);
-router.delete("/states", deleteAllStates);
-router.post("/states", validateState, createState);
-router.get("/states/:stateName", validateStateName, getStateByName);
-router.delete("/states/:stateName", validateStateName, deleteState);
-router.patch("/states/:stateID", validateStateName, updateState);
+initTables();
 
-// Artisan Routes
+router.get("/products", async (req: any, res: any) => {
+  try {
+    const { page = 1, limit = 20, category, craft, search } = req.query;
+    const offset = (Number(page) - 1) * Number(limit);
+
+    let query = supabase.from('products').select('*', { count: 'exact' });
+
+    if (category) query = query.eq('category', category);
+    if (craft) query = query.eq('craft', craft);
+    if (search) query = query.or(`name.ilike.%${search}%,description.ilike.%${search}%`);
+
+    query = query.range(offset, offset + Number(limit) - 1);
+    const { data, error } = await query;
+
+    if (error) throw error;
+    res.json({ success: true, data: data || [], pagination: { page: Number(page), limit: Number(limit), total: data?.length || 0 } });
+  } catch (error: any) {
+    console.error('Get products error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+router.post("/products", async (req: any, res: any) => {
+  try {
+    const { name, description, price, category, craft, artisan_id, images, in_stock } = req.body;
+    const { data, error } = await supabase.from('products').insert([
+      { name, description, price, category, craft, artisan_id, images: images || [], in_stock: in_stock ?? true }
+    ]).select();
+    if (error) throw error;
+    res.status(201).json({ success: true, data: data[0] });
+  } catch (error: any) {
+    console.error('Create product error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+router.get("/products/artisan/:artisanId", async (req: any, res: any) => {
+  try {
+    const { artisanId } = req.params;
+    const { data, error } = await supabase.from('products').select('*').eq('artisan_id', artisanId);
+    if (error) throw error;
+    res.json({ success: true, data: data || [] });
+  } catch (error: any) {
+    console.error('Get products by artisan error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+router.delete("/products/:id", async (req: any, res: any) => {
+  try {
+    const { id } = req.params;
+    const { error } = await supabase.from('products').delete().eq('id', id);
+    if (error) throw error;
+    res.json({ success: true, message: 'Product deleted' });
+  } catch (error: any) {
+    console.error('Delete product error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+router.get("/states", async (req: any, res: any) => {
+  try {
+    const { data, error } = await supabase.from('states').select('*').order('name');
+    if (error) throw error;
+    res.json({ success: true, data: data || [] });
+  } catch (error: any) {
+    console.error('Get states error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+router.post("/states", async (req: any, res: any) => {
+  try {
+    const { name, crafts, description } = req.body;
+    const { data, error } = await supabase.from('states').upsert(
+      { name, crafts: crafts || [], description },
+      { onConflict: 'name' }
+    ).select();
+    if (error) throw error;
+    res.status(201).json({ success: true, data: data[0] });
+  } catch (error: any) {
+    console.error('Create state error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+router.get("/states/:stateName", async (req: any, res: any) => {
+  try {
+    const { stateName } = req.params;
+    const { data, error } = await supabase.from('states').select('*').ilike('name', stateName);
+    if (error) throw error;
+    if (!data || data.length === 0) return res.status(404).json({ success: false, error: 'State not found' });
+    res.json({ success: true, data: data[0] });
+  } catch (error: any) {
+    console.error('Get state error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 router.get("/artisans", async (req: any, res: any) => {
   try {
-    const client = new MongoClient(process.env.MONGODB_URL || 'mongodb://localhost:27017/rangmanch');
-    await client.connect();
-    const db = client.db();
-    
-    const artisans = await db.collection('artisans').find({}).sort({ createdAt: -1 }).toArray();
-    
-    res.json({
-      success: true,
-      artisans,
-      count: artisans.length
-    });
-    
+    const { data, error } = await supabase.from('artisans').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    res.json({ success: true, data: data || [], count: data?.length || 0 });
   } catch (error: any) {
     console.error('Get artisans error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to get artisans',
-      message: error?.message || 'Unknown error'
-    });
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 
 router.get("/artisans/:id", async (req: any, res: any) => {
   try {
     const { id } = req.params;
-    
-    const client = new MongoClient(process.env.MONGODB_URL || 'mongodb://localhost:27017/rangmanch');
-    await client.connect();
-    const db = client.db();
-    
-    const artisan = await db.collection('artisans').findOne({ _id: id });
-    
-    if (artisan) {
-      res.json({
-        success: true,
-        artisan,
-        message: 'Artisan found'
-      });
-    } else {
-      res.status(404).json({
-        success: false,
-        error: 'Artisan not found',
-        message: 'Artisan not found'
-      });
-    }
-    
+    const { data, error } = await supabase.from('artisans').select('*').eq('id', id);
+    if (error) throw error;
+    if (!data || data.length === 0) return res.status(404).json({ success: false, error: 'Artisan not found' });
+    res.json({ success: true, data: data[0] });
   } catch (error: any) {
     console.error('Get artisan error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to get artisan',
-      message: error?.message || 'Unknown error'
-    });
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 
 router.post("/artisans", async (req: any, res: any) => {
   try {
-    const client = new MongoClient(process.env.MONGODB_URL || 'mongodb://localhost:27017/rangmanch');
-    await client.connect();
-    const db = client.db();
-    
-    const artisan = {
-      ...req.body,
-      _id: new Date().getTime().toString(),
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      verified: false // New artisans start as unverified
-    };
-    
-    await db.collection('artisans').insertOne(artisan);
-    
-    res.status(201).json({
-      success: true,
-      artisan,
-      message: 'Artisan created successfully'
-    });
-    
+    const { name, email, craft, location, experience, story, image } = req.body;
+    const { data, error } = await supabase.from('artisans').insert([
+      { name, email, craft, location, experience, story, image }
+    ]).select();
+    if (error) throw error;
+    res.status(201).json({ success: true, data: data[0] });
   } catch (error: any) {
     console.error('Create artisan error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to create artisan',
-      message: error?.message || 'Unknown error'
-    });
-  }
-});
-
-// Razorpay Routes for Real Transactions
-router.post('/create-order', async (req: any, res: any) => {
-  try {
-    const { amount, currency, receipt, notes, customer, products } = req.body;
-    
-    const order = await razorpay.orders.create({
-      amount: amount * 100, // Convert to paise
-      currency: currency || 'INR',
-      receipt: receipt || `order_${Date.now()}`,
-      notes: notes || 'Order from RangManch',
-      customer: {
-        name: customer.name,
-        email: customer.email,
-        contact: customer.contact,
-      },
-      products: products.map((p: any) => ({
-        name: p.name,
-        quantity: p.quantity,
-        price: p.price * 100, // Convert to paise
-        currency: currency || 'INR'
-      })),
-      options: {
-        checkout: {
-          method: 'emi',
-          emi: {
-            tenure: [3, 6, 9, 12, 18, 24]
-          }
-        }
-      }
-    });
-
-    // Store order in MongoDB
-    const client = new MongoClient(process.env.MONGODB_URL || 'mongodb://localhost:27017/rangmanch');
-    await client.connect();
-    const db = client.db();
-    
-    const orderData = {
-      _id: order.id,
-      amount,
-      currency,
-      receipt,
-      notes,
-      customer,
-      products,
-      status: 'pending',
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-    
-    await db.collection('orders').insertOne(orderData);
-    
-    // Notify artisan (in real implementation, this would send email/SMS)
-    console.log('Order created:', order.id);
-    console.log('Artisan notified for products:', products.map((p: any) => p.name));
-    
-    res.json({
-      success: true,
-      orderId: order.id,
-      razorpayOrder: order,
-      message: 'Order created successfully'
-    });
-    
-  } catch (error: any) {
-    console.error('Razorpay order creation error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to create order',
-      message: error?.message || 'Unknown error'
-    });
-  }
-});
-
-// Get Order Status
-router.get('/order-status/:orderId', async (req: any, res: any) => {
-  try {
-    const { orderId } = req.params;
-    
-    const client = new MongoClient(process.env.MONGODB_URL || 'mongodb://localhost:27017/rangmanch');
-    await client.connect();
-    const db = client.db();
-    
-    const order = await db.collection('orders').findOne({ _id: orderId });
-    
-    if (order) {
-      res.json({
-        success: true,
-        order: order,
-        message: 'Order found'
-      });
-    } else {
-      res.status(404).json({
-        success: false,
-        error: 'Order not found',
-        message: 'Order not found'
-      });
-    }
-    
-  } catch (error: any) {
-    console.error('Order status error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to get order status',
-      message: error?.message || 'Unknown error'
-    });
-  }
-});
-
-// Webhook for Razorpay payment confirmation
-router.post('/razorpay-webhook', async (req: any, res: any) => {
-  try {
-    const razorpaySignature = req.headers['x-razorpay-signature'];
-    const receivedSignature = req.body;
-    
-    // Verify webhook signature (in production, implement proper verification)
-    const isValid = razorpay.validateWebhookSignature(JSON.stringify(receivedSignature), razorpaySignature);
-    
-    if (!isValid) {
-      return res.status(400).json({ error: 'Invalid signature' });
-    }
-    
-    const { order_id, status } = req.body;
-    
-    // Update order in MongoDB
-    const client = new MongoClient(process.env.MONGODB_URL || 'mongodb://localhost:27017/rangmanch');
-    await client.connect();
-    const db = client.db();
-    
-    await db.collection('orders').updateOne(
-      { _id: order_id },
-      { 
-        $set: { 
-          status: status === 'captured' ? 'confirmed' : status,
-          updatedAt: new Date()
-        }
-      }
-    );
-    
-    console.log('Payment confirmed for order:', order_id, 'Status:', status);
-    
-    // Notify artisan about confirmed order
-    if (status === 'captured') {
-      console.log('Artisan notified of confirmed order:', order_id);
-    }
-    
-    res.json({ success: true });
-    
-  } catch (error: any) {
-    console.error('Webhook error:', error);
-    res.status(500).json({ error: 'Webhook processing failed' });
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 

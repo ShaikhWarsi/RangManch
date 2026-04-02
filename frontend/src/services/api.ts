@@ -83,6 +83,7 @@ class ApiService {
            error.message.includes('Failed to fetch') ||
            error.message.includes('NetworkError'))) {
         // Silent fail for network errors - will fall back to mock data
+        showNetworkErrorToast('Network error - using offline mode');
         throw new Error('Network error - using mock data');
       }
       
@@ -218,6 +219,44 @@ class ApiService {
 }
 
 export const apiService = new ApiService();
+
+// Network error toast function
+let toastContainer: HTMLDivElement | null = null;
+
+const showNetworkErrorToast = (message: string) => {
+  if (typeof window === 'undefined') return;
+  
+  // Remove existing toast
+  if (toastContainer) {
+    toastContainer.remove();
+  }
+  
+  // Create new toast
+  toastContainer = document.createElement('div');
+  toastContainer.className = 'fixed top-4 right-4 z-[2000] bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg animate-in fade-in slide-in-from-right-2';
+  toastContainer.innerHTML = `
+    <div class="flex items-center gap-3">
+      <div class="flex-1">
+        <p class="font-ui text-sm font-medium">${message}</p>
+      </div>
+      <button onclick="this.parentElement.parentElement.remove()" class="p-1 hover:bg-white/20 rounded-full transition-colors" aria-label="Close notification">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+  `;
+  
+  document.body.appendChild(toastContainer);
+  
+  // Auto remove after 3 seconds
+  setTimeout(() => {
+    if (toastContainer && toastContainer.parentNode) {
+      toastContainer.remove();
+      toastContainer = null;
+    }
+  }, 3000);
+};
 
 // Mock data fallback for development
 export const mockProducts: Product[] = [

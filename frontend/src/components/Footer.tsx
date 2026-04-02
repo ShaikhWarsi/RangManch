@@ -207,7 +207,7 @@ export const Footer: React.FC = () => {
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <Mail size={18} style={{ color: defaultTheme.colors.gold }} />
                 <span style={{ fontFamily: 'Inter', fontSize: '0.9rem' }}>
-                  hello@rangmanch.in
+                  contact@teamacdc.demo
                 </span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -277,7 +277,7 @@ export const Footer: React.FC = () => {
             opacity: 0.7,
             margin: 0
           }}>
-            2024 Rangmanch. All rights reserved. | 
+            2024 Rangmanch. All rights reserved. | Built by Team AC-DC | 
             <a 
               href="/privacy" 
               style={{

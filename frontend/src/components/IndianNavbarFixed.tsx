@@ -85,8 +85,8 @@ const IndianNavbarFixed: React.FC = () => {
           rounded-full border border-white/20
           backdrop-blur-md
           ${isScrolled 
-            ? 'bg-white/90 w-[92%] max-w-[1100px] shadow-premium' 
-            : 'bg-white/40 w-[95%] max-w-[1300px]'
+            ? 'bg-white/90 w-[92%] max-w-[1100px] shadow-premium transition-all duration-500' 
+            : 'bg-white/40 w-[95%] max-w-[1300px] transition-all duration-500'
           }
         `}
       >

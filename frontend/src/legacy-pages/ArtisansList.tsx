@@ -56,12 +56,12 @@ export const ArtisansList: React.FC = () => {
       craft: "Banarasi Silk",
       experience: "35 years",
       story: "8th generation weaver preserving ancient Jamdani techniques",
-      image: "https://static.wixstatic.com/media/4594f8_7057921b8d494498a115f1cab32a633f~mv2.jpg/v1/fill/w_568,h_482,al_c,q_80,usm_0.66_1.00_0.01,enc_avif,quality_auto/4594f8_7057921b8d494498a115f1cab32a633f~mv2.jpg",
+      image: "https://images.unsplash.com/photo-1571013125012-079b8c2dd9?w=400&h=400&fit=crop&crop=faces",
       rating: 4.9,
       totalProducts: 42,
       region: "North",
       contact: {
-        email: "monika.das@rangmanch.in",
+        email: "monika.das@rangmanch.demo",
         phone: "+91 99999 00000",
         preferredTime: "10 AM - 6 PM"
       },
@@ -81,7 +81,7 @@ export const ArtisansList: React.FC = () => {
       totalProducts: 38,
       region: "South",
       contact: {
-        email: "lakshmi.ammal@rangmanch.in",
+        email: "lakshmi.ammal@rangmanch.demo",
         phone: "+91 88888 77777",
         preferredTime: "9 AM - 5 PM"
       },
@@ -101,7 +101,7 @@ export const ArtisansList: React.FC = () => {
       totalProducts: 56,
       region: "West",
       contact: {
-        email: "rajesh.kumar@rangmanch.in",
+        email: "rajesh.kumar@rangmanch.demo",
         phone: "+91 99999 88888",
         preferredTime: "11 AM - 7 PM"
       },
@@ -121,7 +121,7 @@ export const ArtisansList: React.FC = () => {
       totalProducts: 28,
       region: "East",
       contact: {
-        email: "ashu.jha@rangmanch.in",
+        email: "ashu.jha@rangmanch.demo",
         phone: "+91 77777 99999",
         preferredTime: "10 AM - 4 PM"
       },
@@ -141,7 +141,7 @@ export const ArtisansList: React.FC = () => {
       totalProducts: 34,
       region: "South",
       contact: {
-        email: "abdul.karim@rangmanch.in",
+        email: "abdul.karim@rangmanch.demo",
         phone: "+91 66666 55555",
         preferredTime: "10 AM - 5 PM"
       },
@@ -161,7 +161,7 @@ export const ArtisansList: React.FC = () => {
       totalProducts: 45,
       region: "East",
       contact: {
-        email: "phoolan.devi@rangmanch.in",
+        email: "phoolan.devi@rangmanch.demo",
         phone: "+91 55555 44444",
         preferredTime: "9 AM - 3 PM"
       },
@@ -176,12 +176,12 @@ export const ArtisansList: React.FC = () => {
       craft: "Phulkari Embroidery",
       experience: "20 years",
       story: "Preserving the vibrant Punjabi embroidery tradition",
-      image: "https://www.sakoyafoundation.com/assets/image/artist/Phulkari-Lajwanti-Ravinder-1.jpg",
+      image: "https://images.unsplash.com/photo-1571013125012-079b8c2dd9?w=400&h=400&fit=crop&crop=faces",
       rating: 4.7,
       totalProducts: 32,
       region: "North",
       contact: {
-        email: "gurmeet.singh@rangmanch.in",
+        email: "gurmeet.singh@rangmanch.demo",
         phone: "+91 44444 33333",
         preferredTime: "11 AM - 6 PM"
       },
@@ -196,12 +196,12 @@ export const ArtisansList: React.FC = () => {
       craft: "Wood Carving",
       experience: "32 years",
       story: "Master craftsman specializing in intricate wooden designs",
-      image: "https://www.valgardena-groeden.com/images/cms/main/754x435/B-holzschnitzen_helmuth-rier-smg.jpg",
+      image: "https://images.unsplash.com/photo-1558809732-57d131a0743e?w=400&h=400&fit=crop&crop=faces",
       rating: 4.8,
       totalProducts: 67,
       region: "North",
       contact: {
-        email: "ramesh.sutaar@rangmanch.in",
+        email: "ramesh.sutaar@rangmanch.demo",
         phone: "+91 33333 22222",
         preferredTime: "9 AM - 5 PM"
       },
@@ -216,12 +216,12 @@ export const ArtisansList: React.FC = () => {
       craft: "Chikankari Embroidery",
       experience: "23 years",
       story: "Master of the delicate white-on-white embroidery technique",
-      image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR8P0fbFQ1a445h7f8Rtsd946rzVcIW6GOseg&s",
+      image: "https://images.unsplash.com/photo-1583224679-4b8c6f2c6d0?w=400&h=400&fit=crop&crop=faces",,
       rating: 4.9,
       totalProducts: 51,
       region: "North",
       contact: {
-        email: "zarina.begum@rangmanch.in",
+        email: "zarina.begum@rangmanch.demo",
         phone: "+91 22222 11111",
         preferredTime: "10 AM - 4 PM"
       },
@@ -236,12 +236,12 @@ export const ArtisansList: React.FC = () => {
       craft: "Pattachitra Painting",
       experience: "27 years",
       story: "Preserving the ancient scroll painting tradition of Odisha",
-      image: "https://inditales.com/wp-content/uploads/2020/03/pattachitra-artist-raghurajpur.jpg",
+      image: "https://images.unsplash.com/photo-1544716035-9e6a67b5d99?w=400&h=400&fit=crop&crop=faces",,
       rating: 4.8,
       totalProducts: 29,
       region: "East",
       contact: {
-        email: "narayan.das@rangmanch.in",
+        email: "narayan.das@rangmanch.demo",
         phone: "+91 11111 00000",
         preferredTime: "8 AM - 12 PM"
       },

@@ -32,8 +32,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     const response = await apiService.getProduct(params.id);
     product = response.data;
   } catch (error) {
-    console.log('Product not found in API, checking mock data...');
-    // Fallback to mock data
+    // Product not found in API, checking mock data
     product = mockProducts.find(p => p._id === params.id);
   }
   

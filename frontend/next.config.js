@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  output: 'export', // Enable static exports for Netlify
+  // output: 'export', // Disabled for local dev - enable when deploying to static host
   trailingSlash: true,
   pageExtensions: ['tsx', 'ts', 'js', 'jsx'], // Allow pages directory with app router
   images: {

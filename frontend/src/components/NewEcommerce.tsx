@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import { Footer } from "../components/Footer";
 import IndianNavbarFixed from "../components/IndianNavbarFixed";
 import { ProductCardSkeleton, PageLoadingSkeleton } from "../components/SkeletonLoading";
+import CartDrawer from "../components/CartDrawer";
+import { useCart } from "../context/CartContext";
 import { apiService, mockProducts, mockArtisans } from "../services/api";
 import {
   Sparkles,
@@ -13,7 +15,8 @@ import {
   Hammer,
   Home,
   Search,
-  Monitor
+  Monitor,
+  ShoppingBag
 } from "lucide-react";
 
 interface CategoryItem {
@@ -74,6 +77,8 @@ const TradePage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [products, setProducts] = useState<any[]>([]);
   const [artisans, setArtisans] = useState<any[]>([]);
+  const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
+  const { addToCart, cartItems, getTotalItems } = useCart();
 
   // Fetch real data from API
   useEffect(() => {
@@ -389,7 +394,7 @@ const TradePage: React.FC = () => {
             // Show actual products when loaded
             categories
               .filter(c => selectedCategory === "all" || c.id === selectedCategory)
-              .flatMap(c => c.items)
+              .flatMap(c => c.items.map(item => ({ ...item, categoryId: c.id })))
               .filter(item => item.name.toLowerCase().includes(searchQuery.toLowerCase()))
               .filter(item => {
                 const price = parseInt(item.price.replace(/[₹,]/g, ''));
@@ -398,7 +403,7 @@ const TradePage: React.FC = () => {
               .sort((a, b) => {
                 const priceA = parseInt(a.price.replace(/[₹,]/g, ''));
                 const priceB = parseInt(b.price.replace(/[₹,]/g, ''));
-                
+
                 switch(sortBy) {
                   case 'price-low':
                     return priceA - priceB;
@@ -451,6 +456,24 @@ const TradePage: React.FC = () => {
                       {!item.name.includes("Banarasi") && !item.name.includes("Kanjivaram") && !item.name.includes("Kundan") && !item.name.includes("Jhumka") && !item.name.includes("Blue Pottery") && !item.name.includes("Terracotta") && !item.name.includes("Block Print") && !item.name.includes("Dhokra") && "Handcrafted using traditional techniques passed down through generations of master artisans."}
                     </p>
                   </div>
+                  {/* Add to Cart Button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      addToCart({
+                        id: `${item.categoryId}-${idx}`,
+                        name: item.name,
+                        price: parseInt(item.price.replace(/[₹,]/g, '')),
+                        image: item.img,
+                        quantity: 1
+                      });
+                      setIsCartOpen(true);
+                    }}
+                    className="mt-4 w-full py-3 bg-maroon text-ivory rounded-lg font-ui font-bold text-sm hover:bg-walnut transition-all flex items-center justify-center gap-2"
+                  >
+                    <ShoppingBag size={16} />
+                    Add to Cart
+                  </button>
                 </div>
               </div>
             ))
@@ -509,6 +532,7 @@ const TradePage: React.FC = () => {
         </div>
       </div>
 
+      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
       <Footer />
       
       {/* Mobile Sticky CTA */}

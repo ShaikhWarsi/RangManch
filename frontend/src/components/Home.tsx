@@ -938,7 +938,7 @@ const Home: React.FC = () => {
                 </p>
                 
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "15px" }}>
-                  {["React.js", "Express.js", "MongoDB", "Firebase", "Leaflet.js", "H5P"].map(tech => (
+                  {["React.js", "Express.js", "PostgreSQL", "Supabase", "Leaflet.js", "H5P"].map(tech => (
                     <div key={tech} style={{
                       padding: "10px 20px",
                       background: "rgba(139, 92, 246, 0.2)",

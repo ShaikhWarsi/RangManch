@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 import { defaultTheme } from '../types/theme';
 
-// TypeScript interfaces
 interface LoginFormData {
   email: string;
   password: string;
@@ -17,6 +16,12 @@ interface FormErrors {
   password?: string;
   role?: string;
 }
+
+const DEMO_ACCOUNTS = [
+  { role: 'Buyer', email: 'demo.buyer@rangmanch.in', password: 'demo123456', color: '#8B5CF6' },
+  { role: 'Artisan', email: 'demo.artisan@rangmanch.in', password: 'demo123456', color: '#D97706' },
+  { role: 'NGO', email: 'demo.ngo@rangmanch.in', password: 'demo123456', color: '#059669' }
+];
 
 const LoginPage: React.FC = () => {
   const router = useRouter();
@@ -32,7 +37,6 @@ const LoginPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [serverError, setServerError] = useState<string>('');
 
-  // Handle initial page loading
   useEffect(() => {
     const timer = setTimeout(() => {
       setPageLoading(false);
@@ -40,15 +44,13 @@ const LoginPage: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Handle form input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>): void => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
-    
-    // Clear error when user starts typing
+
     if (errors[name as keyof FormErrors]) {
       setErrors(prev => ({
         ...prev,
@@ -57,7 +59,6 @@ const LoginPage: React.FC = () => {
     }
   };
 
-  // Validate form
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
@@ -77,10 +78,9 @@ const LoginPage: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Handle form submission
   const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     setLoading(true);
@@ -96,7 +96,20 @@ const LoginPage: React.FC = () => {
     }
   };
 
-  // Show loading state while initializing
+  const handleDemoLogin = async (email: string, password: string): Promise<void> => {
+    setLoading(true);
+    setServerError('');
+
+    try {
+      await login(email, password);
+      router.push('/trade');
+    } catch (error: any) {
+      setServerError(error.message || 'Demo login failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (pageLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: defaultTheme.colors.ivory }}>
@@ -110,12 +123,11 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-ivory relative">
-      {/* Heritage Pattern Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-maroon/20 via-purple/10 to-teal/5" />
       <div className="absolute inset-0 bg-sand/5" style={{
         backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(107, 31, 43, 0.03) 35px, rgba(107, 31, 43, 0.03) 70px)`
       }} />
-      
+
       <div className="relative bg-white/95 backdrop-blur-sm p-12 rounded-2xl shadow-premium w-full max-w-md mx-5 border border-sand/20">
         <div className="text-center mb-8">
           <h1 className="font-serif text-3xl text-maroon mb-2">
@@ -126,11 +138,59 @@ const LoginPage: React.FC = () => {
           </p>
         </div>
 
+        <div style={{
+          backgroundColor: '#fef3c7',
+          border: '1px solid #fbbf24',
+          borderRadius: '8px',
+          padding: '12px',
+          marginBottom: '20px'
+        }}>
+          <p style={{ color: '#92400e', fontSize: '13px', fontWeight: '500', marginBottom: '8px' }}>
+            Demo Accounts - Quick Login
+          </p>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {DEMO_ACCOUNTS.map((account) => (
+              <button
+                key={account.role}
+                onClick={() => handleDemoLogin(account.email, account.password)}
+                disabled={loading}
+                style={{
+                  backgroundColor: account.color,
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: '8px 14px',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  opacity: loading ? 0.6 : 1,
+                  transition: 'all 0.2s'
+                }}
+              >
+                {account.role}
+              </button>
+            ))}
+          </div>
+          <p style={{ color: '#b45309', fontSize: '11px', marginTop: '8px' }}>
+            Password for all demo accounts: demo123456
+          </p>
+        </div>
+
         {serverError && (
           <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-5 text-sm border border-red-200">
             {serverError}
           </div>
         )}
+
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          marginBottom: '16px'
+        }}>
+          <div style={{ flex: 1, height: '1px', backgroundColor: defaultTheme.colors.sand }} />
+          <span style={{ padding: '0 12px', color: defaultTheme.colors.walnut, fontSize: '12px' }}>or sign in with email</span>
+          <div style={{ flex: 1, height: '1px', backgroundColor: defaultTheme.colors.sand }} />
+        </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <div>

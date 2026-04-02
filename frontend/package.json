@@ -17,7 +17,6 @@
     "@splidejs/react-splide": "^0.7.12",
     "autoprefixer": "^10.4.27",
     "bootstrap": "^5.3.2",
-    "firebase": "^12.9.0",
     "framer-motion": "^10.16.4",
     "gsap": "^3.12.2",
     "gsap-trial": "^3.12.2",

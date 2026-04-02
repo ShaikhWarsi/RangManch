@@ -1,688 +1,528 @@
 'use client'
 
-import React, { useEffect, useState, useRef } from "react";
-import dynamic from 'next/dynamic';
-import "leaflet/dist/leaflet.css";
-import data from "../IndianData/UpdateIndiaGeo.json";
-import "../styles/IndiaMap.css";
-import { Building, Home, MapPin, Trees, Anchor, Target, X } from "lucide-react";
+import React, { useState } from "react";
+import { X, ArrowRight, Star, ShoppingCart, MapPin, Palette } from "lucide-react";
+import { apiService, Product } from "../services/api";
 
-// Dynamic imports for leaflet components with proper types
-const MapContainer = dynamic(
-  () => import("react-leaflet").then((mod: any) => mod.MapContainer),
-  { ssr: false }
-);
-
-const TileLayer = dynamic(
-  () => import("react-leaflet").then((mod: any) => mod.TileLayer),
-  { ssr: false }
-);
-
-const GeoJSON = dynamic(
-  () => import("react-leaflet").then((mod) => mod.GeoJSON),
-  { ssr: false }
-);
-
-const ZoomControl = dynamic(
-  () => import("react-leaflet").then((mod) => mod.ZoomControl),
-  { ssr: false }
-);
-
-// Dynamic import for L (leaflet) to avoid SSR issues
-let L: any = null;
-
-// Helper function to get L
-const getL = async () => {
-  if (!L) {
-    const leaflet = await import("leaflet");
-    L = leaflet.default;
-  }
-  return L;
-};
-
-// Dynamic component wrapper
-const IndiaMapWrapper = React.memo(() => {
-  const [isClient, setIsClient] = useState(false);
-  const [leafletLoaded, setLeafletLoaded] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-    getL().then(() => {
-      setLeafletLoaded(true);
-    });
-    
-    return () => {
-      setIsClient(false);
-      setLeafletLoaded(false);
-    };
-  }, []);
-
-  if (!isClient || !leafletLoaded) {
-    return (
-      <div style={{ 
-        height: '100vh', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        background: '#1a1a1a',
-        color: 'white'
-      }}>
-        <div>Loading Map...</div>
-      </div>
-    );
-  }
-
-  return <IndiaMap />;
-});
-
-// --- TypeScript Interfaces ---
-
-interface HeritageInfo {
+interface StateInfo {
   crafts: string[];
   colors: string[];
-  icon: React.ReactNode;
   description: string;
 }
 
-interface StateHeritageMap {
-  [key: string]: HeritageInfo;
-}
-
-interface ResponsiveMetrics {
-  isMobile: boolean;
-  isTablet: boolean;
-  windowWidth: number;
-}
-
-// Custom hook for responsive design
-const useResponsive = (): ResponsiveMetrics => {
-  const [windowWidth, setWindowWidth] = useState<number>(typeof window !== 'undefined' ? window.innerWidth : 1024);
-  const [isMobile, setIsMobile] = useState<boolean>(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
-  const [isTablet, setIsTablet] = useState<boolean>(typeof window !== 'undefined' ? window.innerWidth >= 768 && window.innerWidth < 1024 : false);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    
-    const handleResize = () => {
-      setWindowWidth(window.innerWidth);
-      setIsMobile(window.innerWidth < 768);
-      setIsTablet(window.innerWidth >= 768 && window.innerWidth < 1024);
-    };
-    
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  return { isMobile, isTablet, windowWidth };
+const stateHeritageInfo: Record<string, StateInfo> = {
+  "Rajasthan": {
+    crafts: ["Blue Pottery", "Block Printing", "Handwoven Textiles"],
+    colors: ["#FF6B6B", "#4ECDC4"],
+    description: "Land of forts and vibrant handicrafts"
+  },
+  "Tamil Nadu": {
+    crafts: ["Kanjivaram Silk", "Tanjore Paintings", "Bronze Sculptures"],
+    colors: ["#45B7D1", "#96CEB4"],
+    description: "Home to ancient temples and silk weaving"
+  },
+  "Uttar Pradesh": {
+    crafts: ["Banarasi Silk", "Chikankari", "Marble Inlay"],
+    colors: ["#FFEAA7", "#DDA0DD"],
+    description: "Epicenter of textile arts and Mughal crafts"
+  },
+  "Gujarat": {
+    crafts: ["Bandhani", "Patola Silk", "Wood Carving"],
+    colors: ["#A8E6CF", "#DCEDC1"],
+    description: "Colorful textiles and folk traditions"
+  },
+  "Kerala": {
+    crafts: ["Coir Products", "Wooden Toys", "Murals"],
+    colors: ["#FFAAA5", "#FF8B94"],
+    description: "Backwater artisans and natural crafts"
+  },
+  "Maharashtra": {
+    crafts: ["Paithani Silk", "Bidriware", "Warli Art"],
+    colors: ["#FFB347", "#FFCC80"],
+    description: "Rich folk art and prestigious textiles"
+  },
+  "West Bengal": {
+    crafts: ["Baluchari Sarees", "Terracotta", "Dokra Art"],
+    colors: ["#9B59B6", "#8E44AD"],
+    description: "Artistic heritage and handloom traditions"
+  },
+  "Karnataka": {
+    crafts: ["Mysore Silk", "Sandur Lambani", "Channapatna Toys"],
+    colors: ["#3498DB", "#2980B9"],
+    description: "Silk city and traditional craftsmanship"
+  },
+  "Odisha": {
+    crafts: ["Pattachitra", "Sambalpuri Sarees", "Silver Filigree"],
+    colors: ["#E67E22", "#D35400"],
+    description: "Ancient art forms and woven masterpieces"
+  },
+  "Andhra Pradesh": {
+    crafts: ["Kalamkari", "Bandhani", "Bronze Castings"],
+    colors: ["#1ABC9C", "#16A085"],
+    description: "Ancient painting traditions and metal arts"
+  }
 };
 
-const MapContainerAny = MapContainer as any;
-const TileLayerAny = TileLayer as any;
-const GeoJSONAny = GeoJSON as any;
-const ZoomControlAny = ZoomControl as any;
+const statePaths: Record<string, string> = {
+  "Rajasthan": "M120,120 L180,100 L220,140 L240,200 L220,260 L160,280 L100,240 L80,180 Z",
+  "Gujarat": "M60,200 L100,180 L120,220 L100,280 L60,300 L40,260 Z",
+  "Maharashtra": "M100,280 L140,260 L160,300 L140,360 L100,380 L80,340 Z",
+  "Tamil Nadu": "M140,380 L160,360 L180,400 L160,460 L130,480 L120,420 Z",
+  "Kerala": "M130,420 L150,400 L160,440 L140,480 L120,460 Z",
+  "Karnataka": "M120,320 L160,300 L180,340 L160,400 L120,420 L100,360 Z",
+  "Andhra Pradesh": "M160,320 L200,300 L220,340 L200,400 L160,400 L150,360 Z",
+  "Odisha": "M200,280 L240,260 L260,300 L240,340 L200,340 L190,300 Z",
+  "West Bengal": "M220,220 L260,200 L280,240 L260,280 L220,280 L210,240 Z",
+  "Uttar Pradesh": "M180,140 L240,120 L280,160 L260,220 L200,220 L170,180 Z"
+};
 
-const IndiaMap: React.FC = () => {
-  const { isMobile, isTablet, windowWidth } = useResponsive();
+export default function IndiaMap() {
   const [selectedState, setSelectedState] = useState<string | null>(null);
-  const [showSidebar, setShowSidebar] = useState(false);
   const [hoveredState, setHoveredState] = useState<string | null>(null);
-  const [showMobilePanel, setShowMobilePanel] = useState(false);
-  const mapRef = useRef<any>(null);
-  const [mapKey, setMapKey] = useState(0);
-  
-  // Force map re-initialization when mobile state changes
-  useEffect(() => {
-    setMapKey(prev => prev + 1);
-  }, [isMobile]);
-  
-  // Cultural heritage info for each state
-  const stateHeritageInfo: StateHeritageMap = {
-    "Rajasthan": {
-      crafts: ["Blue Pottery", "Miniature Paintings", "Block Printing"],
-      colors: ["#FF6B6B", "#4ECDC4"],
-      icon: <Building size={24} />,
-      description: "Land of forts and vibrant handicrafts"
-    },
-    "Tamil Nadu": {
-      crafts: ["Kanjivaram Silk", "Tanjore Paintings", "Bronze Sculptures"],
-      colors: ["#45B7D1", "#96CEB4"],
-      icon: <Home size={24} />,
-      description: "Home to ancient temples and silk weaving"
-    },
-    "Uttar Pradesh": {
-      crafts: ["Banarasi Silk", "Chikankari", "Marble Inlay"],
-      colors: ["#FFEAA7", "#DDA0DD"],
-      icon: <MapPin size={24} />,
-      description: "Epicenter of textile arts and Mughal crafts"
-    },
-    "Gujarat": {
-      crafts: ["Bandhani", "Patola Silk", "Wood Carving"],
-      colors: ["#A8E6CF", "#DCEDC1"],
-      icon: <Trees size={24} />,
-      description: "Colorful textiles and folk traditions"
-    },
-    "Kerala": {
-      crafts: ["Coir Products", "Wooden Toys", "Murals"],
-      colors: ["#FFAAA5", "#FF8B94"],
-      icon: <Anchor size={24} />,
-      description: "Backwater artisans and natural crafts"
-    }
-  };
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const currentStates = Object.keys(stateHeritageInfo);
-
-  const getStateStyle = (feature: any) => {
-    const stateName = feature.properties.ST_NM;
-    const isActive = currentStates.includes(stateName);
-    const isHovered = hoveredState === stateName;
-    
-    if (isHovered) {
-      return {
-        fillColor: stateHeritageInfo[stateName]?.colors[0] || "#FFD700",
-        color: "#FFFFFF",
-        weight: 3,
-        opacity: 1,
-        fillOpacity: 0.8,
-        dashArray: "0"
-      };
-    }
-    
-    if (isActive) {
-      return {
-        fillColor: stateHeritageInfo[stateName]?.colors[0] || "#FF6B6B",
-        color: "#FFFFFF",
-        weight: 2,
-        opacity: 1,
-        fillOpacity: 0.7,
-        dashArray: "0"
-      };
-    }
-    
-    return {
-      fillColor: "#2D3748",
-      color: "#4A5568",
-      weight: 1,
-      opacity: 0.8,
-      fillOpacity: 0.4,
-      dashArray: "3"
-    };
-  };
-
-  const handleStateClick = (stateName: string) => {
-    setSelectedState(stateName);
-    
-    const stateNameFormatted = stateName.split(" ").join("").toLowerCase();
-    
-    setTimeout(() => {
-      if (typeof window !== 'undefined') {
-        window.location.href = `/state/${stateNameFormatted}`;
+  React.useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await apiService.getProducts(1, 50);
+        if (response.success && response.data) {
+          setProducts(response.data);
+        }
+      } catch (error) {
+        console.log('Using mock products');
       }
-    }, 1500);
+    };
+    fetchProducts();
+  }, []);
+
+  const getStateProducts = (stateName: string): Product[] => {
+    const stateInfo = stateHeritageInfo[stateName];
+    if (!stateInfo) return [];
+
+    return products.filter(product => {
+      const productName = product.name.toLowerCase();
+      const productDesc = product.description.toLowerCase();
+      return stateInfo.crafts.some(craft =>
+        productName.includes(craft.toLowerCase()) ||
+        productDesc.includes(craft.toLowerCase())
+      );
+    });
   };
 
-  // Mobile toggle button
-  const MobileToggleButton = () => (
-    <button
-      onClick={() => setShowMobilePanel(!showMobilePanel)}
-      style={{
-        position: "absolute",
-        bottom: isMobile ? "90px" : "30px",
-        right: "20px",
-        zIndex: 1000,
-        width: isMobile ? "56px" : "48px",
-        height: isMobile ? "56px" : "48px",
-        borderRadius: "50%",
-        background: "linear-gradient(135deg, #FF6B6B 0%, #C44569 100%)",
-        border: "none",
-        boxShadow: "0 4px 15px rgba(0,0,0,0.3)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontSize: "1.5rem",
-        cursor: "pointer",
-        transition: "all 0.3s ease"
-      }}
-    >
-      {showMobilePanel ? <X size={24} /> : <Target size={24} />}
-    </button>
-  );
+  const navigateToProduct = (productId: string) => {
+    window.location.href = `/product/${productId}`;
+  };
+
+  const navigateToMarketplace = () => {
+    window.location.href = '/trade';
+  };
 
   return (
     <div style={{
-      position: "relative",
-      height: "100vh",
-      width: "100vw",
-      overflow: "hidden",
-      background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)"
+      minHeight: "100vh",
+      background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
+      padding: "20px"
     }}>
-      {/* Responsive Header Overlay */}
       <div style={{
-        position: "absolute",
-        top: "0",
-        left: "0",
-        right: "0",
-        zIndex: 1000,
-        background: "linear-gradient(180deg, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.8) 100%)",
-        padding: isMobile ? "15px 20px" : "30px 40px",
-        pointerEvents: "none"
+        maxWidth: "1400px",
+        margin: "0 auto"
       }}>
         <div style={{
-          maxWidth: "1400px",
-          margin: "0 auto",
           display: "flex",
-          flexDirection: isMobile ? "column" : "row",
           justifyContent: "space-between",
-          alignItems: isMobile ? "flex-start" : "center",
-          gap: isMobile ? "10px" : "0",
-          pointerEvents: "auto"
+          alignItems: "center",
+          marginBottom: "30px",
+          flexWrap: "wrap",
+          gap: "20px"
         }}>
           <div>
             <h1 style={{
               margin: "0",
-              fontSize: isMobile ? "1.5rem" : isTablet ? "2rem" : "2.5rem",
+              fontSize: "2.5rem",
               fontWeight: "800",
               background: "linear-gradient(90deg, #FFD700, #FFFFFF)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
-              fontFamily: "'Noto Serif Devanagari', serif",
-              lineHeight: "1.2"
+              fontFamily: "'Noto Serif Devanagari', serif"
             }}>
-              {isMobile ? "Rangmanch" : "Rangmanch Cultural Map"}
+              Rangmanch Cultural Map
             </h1>
-            {!isMobile && (
-              <p style={{
-                margin: "5px 0 0 0",
-                color: "#CBD5E1",
-                fontSize: "1.1rem",
-                fontWeight: "300"
-              }}>
-                Explore India's heritage through interactive geography
-              </p>
-            )}
-          </div>
-          
-          <div style={{
-            display: "flex",
-            gap: isMobile ? "8px" : "15px",
-            width: isMobile ? "100%" : "auto",
-            justifyContent: isMobile ? "space-between" : "flex-end"
-          }}>
-            <button style={{
-              padding: isMobile ? "8px 12px" : "12px 25px",
-              background: "rgba(255, 215, 0, 0.15)",
-              border: "1px solid rgba(255, 215, 0, 0.3)",
-              borderRadius: isMobile ? "20px" : "25px",
-              color: "#FFD700",
-              fontWeight: "600",
-              fontSize: isMobile ? "0.8rem" : "0.9rem",
-              cursor: "pointer",
-              backdropFilter: "blur(10px)",
-              whiteSpace: "nowrap",
-              flex: isMobile ? "1" : "none"
-            }}>
-              {isMobile ? "🗺️ States" : "🗺️ Explore All States"}
-            </button>
-            <button style={{
-              padding: isMobile ? "8px 12px" : "12px 25px",
-              background: "linear-gradient(135deg, #FF6B6B 0%, #C44569 100%)",
-              border: "none",
-              borderRadius: isMobile ? "20px" : "25px",
-              color: "white",
-              fontWeight: "600",
-              fontSize: isMobile ? "0.8rem" : "0.9rem",
-              cursor: "pointer",
-              whiteSpace: "nowrap",
-              flex: isMobile ? "1" : "none"
-            }}>
-              {isMobile ? "🎭 Trails" : "🎭 View Heritage Trails"}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Map Container */}
-      <div key={`map-wrapper-${isMobile ? 'mobile' : 'desktop'}`}>
-        <MapContainerAny
-          key={mapKey}
-          center={[22.5, 80]}
-          zoom={isMobile ? 4 : 4.5}
-          style={{ 
-            height: "100vh", 
-            width: "100vw",
-            filter: "brightness(0.95) contrast(1.1)"
-          }}
-          zoomControl={false}
-          scrollWheelZoom={true}
-          attributionControl={false}
-        >
-        <TileLayerAny
-          url="https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        />
-        
-        <ZoomControlAny position="bottomright" />
-
-        <GeoJSONAny
-          key={isMobile ? 'mobile' : 'desktop'}
-          data={data as any}
-            onEachFeature={(feature: any, layer: L.Layer) => {
-              const stateName = feature.properties.ST_NM;
-              const heritageInfo = stateHeritageInfo[stateName];
-              
-              (layer as L.Path).setStyle(getStateStyle(feature));
-
-              layer.on("click", () => {
-                const stateFeature = (data as any).features.find((f: any) => f.properties.ST_NM === stateName);
-                if (stateFeature) {
-                  const bounds = L.geoJSON(stateFeature).getBounds();
-                  handleStateClick(stateName);
-                  if (isMobile) setShowMobilePanel(false);
-                }
-              });
-
-              // Simplified tooltip for mobile
-              layer.bindTooltip(`
-                <div style="
-                  padding: ${isMobile ? '10px' : '15px'};
-                  background: rgba(15, 23, 42, 0.95);
-                  border-radius: ${isMobile ? '8px' : '12px'};
-                  border: 2px solid ${heritageInfo?.colors?.[0] || "#FFD700"};
-                  backdrop-filter: blur(10px);
-                  color: white;
-                  min-width: ${isMobile ? '150px' : '200px'};
-                  max-width: ${isMobile ? '200px' : '300px'};
-                  box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-                ">
-                  <div style="
-                    display: flex;
-                    align-items: center;
-                    gap: ${isMobile ? '5px' : '10px'};
-                    margin-bottom: ${isMobile ? '5px' : '10px'};
-                  ">
-                    <span style="font-size: ${isMobile ? '1.2rem' : '1.5rem'}">${heritageInfo?.icon || "📍"}</span>
-                    <h3 style="margin: 0; color: ${heritageInfo?.colors?.[0] || "#FFD700"}; font-size: ${isMobile ? '1rem' : '1.2rem'}">
-                      ${stateName}
-                    </h3>
-                  </div>
-                  ${heritageInfo && !isMobile ? `
-                  <p style="margin: 0 0 10px 0; color: #CBD5E1; font-size: 0.9rem">
-                    ${heritageInfo.description}
-                  </p>
-                  <div style="
-                    display: flex;
-                    flex-wrap: wrap;
-                    gap: 5px;
-                    margin-top: 10px;
-                  ">
-                    ${heritageInfo.crafts.slice(0, isMobile ? 2 : 3).map(craft => `
-                      <span style="
-                        padding: ${isMobile ? '2px 6px' : '4px 10px'};
-                        background: rgba(255, 255, 255, 0.1);
-                        border-radius: ${isMobile ? '8px' : '12px'};
-                        font-size: ${isMobile ? '0.7rem' : '0.8rem'};
-                        color: ${heritageInfo.colors[1] || "#4ECDC4"};
-                      ">
-                        ${craft}
-                      </span>
-                    `).join('')}
-                  </div>
-                  ` : ''}
-                  ${currentStates.includes(stateName) ? `
-                  <div style="
-                    margin-top: ${isMobile ? '5px' : '10px'};
-                    padding: ${isMobile ? '4px' : '8px'};
-                    background: rgba(255, 215, 0, 0.1);
-                    border-radius: ${isMobile ? '4px' : '8px'};
-                    text-align: center;
-                    font-size: ${isMobile ? '0.7rem' : '0.85rem'};
-                    color: #FFD700;
-                    font-weight: 600;
-                  ">
-                    🚀 Active Hub
-                  </div>
-                  ` : ''}
-                </div>
-              `, {
-                sticky: true,
-                direction: "top",
-                offset: [0, -10],
-                className: "custom-tooltip",
-                opacity: 1
-              });
-
-              layer.on("mouseover", () => {
-                setHoveredState(stateName);
-                (layer as L.Path).setStyle(getStateStyle(feature));
-                if (!isMobile) layer.openTooltip();
-              });
-
-              layer.on("mouseout", () => {
-                setHoveredState(null);
-                (layer as L.Path).setStyle(getStateStyle(feature));
-                if (!isMobile) layer.closeTooltip();
-              });
-            }}
-          />
-        </MapContainerAny>
-      </div>
-
-      {/* Mobile Toggle Button */}
-      <MobileToggleButton />
-
-      {/* Responsive Side Panel */}
-      {(!isMobile || showMobilePanel) && (
-        <div style={{
-          position: "absolute",
-          width: isMobile ? "calc(100% - 40px)" : "300px",
-          maxHeight: isMobile ? "70vh" : "fit-content",
-          top: isMobile ? "auto" : "140px",
-          bottom: isMobile ? "20px" : "auto",
-          left: isMobile ? "20px" : "auto",
-          right: isMobile ? "20px" : "30px",
-          background: "rgba(15, 23, 42, 0.95)",
-          padding: isMobile ? "20px" : "25px",
-          borderRadius: "20px",
-          backdropFilter: "blur(10px)",
-          border: "1px solid rgba(255, 215, 0, 0.2)",
-          boxShadow: "0 20px 40px rgba(0, 0, 0, 0.3)",
-          zIndex: 500,
-          overflowY: isMobile ? "auto" : "visible",
-          transition: "all 0.3s ease"
-        }}>
-          <div style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "15px",
-            marginBottom: "20px",
-            paddingBottom: "15px",
-            borderBottom: "1px solid rgba(255, 255, 255, 0.1)"
-          }}>
-            <div style={{
-              width: isMobile ? "40px" : "50px",
-              height: isMobile ? "40px" : "50px",
-              background: "linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%)",
-              borderRadius: isMobile ? "8px" : "12px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: isMobile ? "1.2rem" : "1.5rem",
-              flexShrink: 0
-            }}>
-              <Target size={isMobile ? 20 : 24} />
-            </div>
-            <div>
-              <h3 style={{
-                margin: "0",
-                color: "white",
-                fontSize: isMobile ? "1.1rem" : "1.3rem"
-              }}>
-                Active Heritage Hubs
-              </h3>
-              <p style={{
-                margin: "5px 0 0 0",
-                color: "#94A3B8",
-                fontSize: isMobile ? "0.8rem" : "0.9rem"
-              }}>
-                Click to explore cultural treasures
-              </p>
-            </div>
-          </div>
-
-          {currentStates.map((state) => {
-            const info = stateHeritageInfo[state];
-            return (
-              <div 
-                key={state}
-                style={{
-                  background: "rgba(255, 255, 255, 0.05)",
-                  borderRadius: "15px",
-                  padding: isMobile ? "12px" : "15px",
-                  marginBottom: "15px",
-                  border: selectedState === state ? "2px solid rgba(255, 215, 0, 0.5)" : "1px solid rgba(255, 255, 255, 0.1)",
-                  cursor: "pointer",
-                  transition: "all 0.3s ease",
-                  touchAction: "manipulation"
-                }}
-                onMouseEnter={(e) => {
-                  if (!isMobile) {
-                    e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)";
-                    e.currentTarget.style.transform = "translateX(-3px)";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isMobile) {
-                    e.currentTarget.style.background = "rgba(255, 255, 255, 0.05)";
-                    e.currentTarget.style.transform = selectedState === state ? "translateX(-5px)" : "none";
-                  }
-                }}
-                onClick={() => {
-                  const stateFeature = (data as any).features.find((f: any) => f.properties.ST_NM === state);
-                  if (stateFeature) {
-                    handleStateClick(state);
-                    if (isMobile) setShowMobilePanel(false);
-                  }
-                }}
-              >
-                <div style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: "8px"
-                }}>
-                  <div style={{ 
-                    display: "flex", 
-                    alignItems: "center", 
-                    gap: isMobile ? "8px" : "10px" 
-                  }}>
-                    <span style={{ fontSize: isMobile ? "1.2rem" : "1.3rem" }}>{info?.icon || "📍"}</span>
-                    <span style={{
-                      color: "white",
-                      fontWeight: "600",
-                      fontSize: isMobile ? "1rem" : "1.1rem"
-                    }}>{state}</span>
-                  </div>
-                  <div style={{
-                    padding: "4px 8px",
-                    background: "rgba(255, 107, 107, 0.2)",
-                    borderRadius: "20px",
-                    color: "#FF6B6B",
-                    fontSize: isMobile ? "0.7rem" : "0.8rem",
-                    fontWeight: "600"
-                  }}>
-                    Live
-                  </div>
-                </div>
-                <p style={{
-                  margin: "0 0 8px 0",
-                  color: "#94A3B8",
-                  fontSize: isMobile ? "0.8rem" : "0.9rem",
-                  lineHeight: "1.4"
-                }}>
-                  {info?.description || "Explore cultural heritage"}
-                </p>
-                <div style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: "5px"
-                }}>
-                  {info?.crafts?.slice(0, isMobile ? 2 : 3).map((craft, idx) => (
-                    <span key={idx} style={{
-                      padding: isMobile ? "2px 6px" : "3px 8px",
-                      background: `rgba(${parseInt(info.colors[0].slice(1, 3), 16)}, ${parseInt(info.colors[0].slice(3, 5), 16)}, ${parseInt(info.colors[0].slice(5, 7), 16)}, 0.2)`,
-                      borderRadius: isMobile ? "8px" : "10px",
-                      fontSize: isMobile ? "0.65rem" : "0.75rem",
-                      color: info.colors[0]
-                    }}>
-                      {craft}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-
-          <div style={{
-            marginTop: "20px",
-            padding: isMobile ? "12px" : "15px",
-            background: "linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 107, 107, 0.1) 100%)",
-            borderRadius: "15px",
-            border: "1px solid rgba(255, 215, 0, 0.3)"
-          }}>
             <p style={{
-              margin: "0",
-              color: "#FFD700",
-              fontSize: isMobile ? "0.8rem" : "0.9rem",
-              textAlign: "center",
-              fontWeight: "500"
+              margin: "8px 0 0 0",
+              color: "#CBD5E1",
+              fontSize: "1.1rem"
             }}>
-              🌟 {isMobile ? "More states coming soon!" : "Coming Soon: More states will be added as we expand our heritage mapping"}
+              Discover local cultural arts from across India
             </p>
           </div>
+          <button
+            onClick={navigateToMarketplace}
+            style={{
+              padding: "12px 25px",
+              background: "linear-gradient(135deg, #FF6B6B 0%, #C44569 100%)",
+              border: "none",
+              borderRadius: "25px",
+              color: "white",
+              fontWeight: "600",
+              fontSize: "0.95rem",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px"
+            }}
+          >
+            <ShoppingCart size={18} />
+            Browse Marketplace
+          </button>
         </div>
-      )}
 
-      {/* Bottom Legend - Simplified for Mobile */}
-      {!isMobile && (
         <div style={{
-          position: "absolute",
-          bottom: "30px",
-          left: "50%",
-          transform: "translateX(-50%)",
-          background: "rgba(15, 23, 42, 0.9)",
-          padding: "12px 20px",
-          borderRadius: "12px",
-          backdropFilter: "blur(10px)",
-          border: "1px solid rgba(255, 255, 255, 0.1)",
-          display: "flex",
-          gap: "20px",
-          zIndex: 500
+          display: "grid",
+          gridTemplateColumns: selectedState ? "1fr 400px" : "1fr",
+          gap: "30px",
+          alignItems: "start"
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <div style={{
+            background: "rgba(15, 23, 42, 0.8)",
+            borderRadius: "24px",
+            padding: "40px",
+            border: "1px solid rgba(255, 255, 255, 0.1)"
+          }}>
+            <svg
+              viewBox="0 0 400 550"
+              style={{
+                width: "100%",
+                height: "auto",
+                maxHeight: "70vh"
+              }}
+            >
+              {Object.entries(statePaths).map(([stateName, path]) => {
+                const info = stateHeritageInfo[stateName];
+                const isHovered = hoveredState === stateName;
+                const isSelected = selectedState === stateName;
+
+                return (
+                  <g key={stateName}>
+                    <path
+                      d={path}
+                      fill={info?.colors[0] || "#4A5568"}
+                      stroke={isSelected || isHovered ? "#FFD700" : "#1e293b"}
+                      strokeWidth={isSelected || isHovered ? 3 : 1}
+                      opacity={isSelected || isHovered ? 1 : 0.7}
+                      style={{
+                        cursor: "pointer",
+                        transition: "all 0.3s ease",
+                        transform: isHovered ? "scale(1.02)" : "scale(1)",
+                        transformOrigin: "center"
+                      }}
+                      onClick={() => setSelectedState(stateName)}
+                      onMouseEnter={() => setHoveredState(stateName)}
+                      onMouseLeave={() => setHoveredState(null)}
+                    />
+                    <text
+                      x={path.split(" ")[1]}
+                      y={path.split(" ")[2]}
+                      fill="white"
+                      fontSize="10"
+                      fontWeight="600"
+                      textAnchor="middle"
+                      style={{ pointerEvents: "none" }}
+                    >
+                      {stateName.split(" ").map((word, i) => (
+                        <tspan key={i} x={path.split(" ")[1]} dy={i * 12}>
+                          {word}
+                        </tspan>
+                      ))}
+                    </text>
+                  </g>
+                );
+              })}
+            </svg>
+
             <div style={{
-              width: "16px",
-              height: "16px",
-              background: "#FF6B6B",
-              borderRadius: "4px",
-              opacity: 0.7
-            }}></div>
-            <span style={{ color: "#CBD5E1", fontSize: "0.8rem" }}>Active Hub</span>
+              display: "flex",
+              justifyContent: "center",
+              gap: "30px",
+              marginTop: "30px",
+              flexWrap: "wrap"
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <div style={{
+                  width: "16px",
+                  height: "16px",
+                  background: "#FF6B6B",
+                  borderRadius: "4px"
+                }}></div>
+                <span style={{ color: "#CBD5E1", fontSize: "0.85rem" }}>Cultural Hub</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <div style={{
+                  width: "16px",
+                  height: "16px",
+                  background: "#4A5568",
+                  borderRadius: "4px"
+                }}></div>
+                <span style={{ color: "#CBD5E1", fontSize: "0.85rem" }}>Coming Soon</span>
+              </div>
+            </div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+
+          {selectedState && (
             <div style={{
-              width: "16px",
-              height: "16px",
-              background: "#2D3748",
-              borderRadius: "4px",
-              opacity: 0.4,
-              border: "1px dashed #4A5568"
-            }}></div>
-            <span style={{ color: "#CBD5E1", fontSize: "0.8rem" }}>Coming Soon</span>
-          </div>
+              background: "rgba(15, 23, 42, 0.95)",
+              borderRadius: "20px",
+              padding: "25px",
+              border: "1px solid rgba(255, 215, 0, 0.3)",
+              boxShadow: "0 20px 40px rgba(0, 0, 0, 0.3)",
+              maxHeight: "80vh",
+              overflowY: "auto"
+            }}>
+              <div style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                marginBottom: "20px",
+                paddingBottom: "15px",
+                borderBottom: "1px solid rgba(255, 255, 255, 0.1)"
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+                  <div style={{
+                    width: "50px",
+                    height: "50px",
+                    background: `linear-gradient(135deg, ${stateHeritageInfo[selectedState]?.colors[0] || '#FF6B6B'} 0%, ${stateHeritageInfo[selectedState]?.colors[1] || '#4ECDC4'} 100%)`,
+                    borderRadius: "12px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center"
+                  }}>
+                    <MapPin size={24} color="white" />
+                  </div>
+                  <div>
+                    <h3 style={{
+                      margin: "0",
+                      color: "white",
+                      fontSize: "1.4rem",
+                      fontWeight: "700"
+                    }}>
+                      {selectedState}
+                    </h3>
+                    <p style={{
+                      margin: "4px 0 0 0",
+                      color: "#94A3B8",
+                      fontSize: "0.9rem"
+                    }}>
+                      {stateHeritageInfo[selectedState]?.description}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSelectedState(null)}
+                  style={{
+                    background: "rgba(255, 255, 255, 0.1)",
+                    border: "none",
+                    borderRadius: "8px",
+                    padding: "8px",
+                    cursor: "pointer",
+                    color: "#94A3B8"
+                  }}
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "8px",
+                marginBottom: "20px"
+              }}>
+                {stateHeritageInfo[selectedState]?.crafts.map((craft, idx) => (
+                  <span key={idx} style={{
+                    padding: "6px 12px",
+                    background: `linear-gradient(135deg, ${stateHeritageInfo[selectedState]?.colors[0]}20 0%, ${stateHeritageInfo[selectedState]?.colors[1]}20 100%)`,
+                    borderRadius: "15px",
+                    fontSize: "0.8rem",
+                    color: stateHeritageInfo[selectedState]?.colors[0],
+                    fontWeight: "500",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px"
+                  }}>
+                    <Palette size={14} />
+                    {craft}
+                  </span>
+                ))}
+              </div>
+
+              <h4 style={{
+                margin: "0 0 15px 0",
+                color: "#FFD700",
+                fontSize: "1rem",
+                fontWeight: "600",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px"
+              }}>
+                <ShoppingCart size={16} />
+                Products from {selectedState}
+              </h4>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                {getStateProducts(selectedState).length > 0 ? (
+                  getStateProducts(selectedState).map((product) => (
+                    <div
+                      key={product._id}
+                      onClick={() => navigateToProduct(product._id)}
+                      style={{
+                        display: "flex",
+                        gap: "12px",
+                        padding: "12px",
+                        background: "rgba(255, 255, 255, 0.05)",
+                        borderRadius: "12px",
+                        cursor: "pointer",
+                        transition: "all 0.2s ease",
+                        border: "1px solid rgba(255, 255, 255, 0.08)"
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)";
+                        e.currentTarget.style.transform = "translateX(-3px)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = "rgba(255, 255, 255, 0.05)";
+                        e.currentTarget.style.transform = "none";
+                      }}
+                    >
+                      <div style={{
+                        width: "70px",
+                        height: "70px",
+                        borderRadius: "8px",
+                        overflow: "hidden",
+                        flexShrink: 0,
+                        background: "rgba(255, 255, 255, 0.1)"
+                      }}>
+                        <img
+                          src={product.images?.[0] || "https://via.placeholder.com/100"}
+                          alt={product.name}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover"
+                          }}
+                        />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <h5 style={{
+                          margin: "0 0 4px 0",
+                          color: "white",
+                          fontSize: "0.95rem",
+                          fontWeight: "600",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap"
+                        }}>
+                          {product.name}
+                        </h5>
+                        <p style={{
+                          margin: "0 0 8px 0",
+                          color: "#94A3B8",
+                          fontSize: "0.8rem",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap"
+                        }}>
+                          {product.description}
+                        </p>
+                        <div style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center"
+                        }}>
+                          <span style={{
+                            color: "#FFD700",
+                            fontSize: "0.95rem",
+                            fontWeight: "700"
+                          }}>
+                            ₹{product.price.toLocaleString()}
+                          </span>
+                          {product.rating && (
+                            <span style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "4px",
+                              color: "#FFB347",
+                              fontSize: "0.75rem"
+                            }}>
+                              <Star size={12} fill="#FFB347" />
+                              {product.rating}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div style={{
+                        display: "flex",
+                        alignItems: "center",
+                        color: "#94A3B8"
+                      }}>
+                        <ArrowRight size={18} />
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div style={{
+                    textAlign: "center",
+                    padding: "30px 20px",
+                    background: "rgba(255, 255, 255, 0.03)",
+                    borderRadius: "12px"
+                  }}>
+                    <p style={{
+                      color: "#94A3B8",
+                      fontSize: "0.9rem",
+                      margin: "0 0 10px 0"
+                    }}>
+                      No products found for {selectedState} crafts
+                    </p>
+                    <button
+                      onClick={navigateToMarketplace}
+                      style={{
+                        padding: "10px 20px",
+                        background: "linear-gradient(135deg, #FF6B6B 0%, #C44569 100%)",
+                        border: "none",
+                        borderRadius: "20px",
+                        color: "white",
+                        fontSize: "0.85rem",
+                        fontWeight: "600",
+                        cursor: "pointer"
+                      }}
+                    >
+                      Browse Full Marketplace
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div style={{
+                marginTop: "20px",
+                padding: "15px",
+                background: "linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 107, 107, 0.1) 100%)",
+                borderRadius: "12px",
+                border: "1px solid rgba(255, 215, 0, 0.2)"
+              }}>
+                <p style={{
+                  margin: "0",
+                  color: "#FFD700",
+                  fontSize: "0.85rem",
+                  textAlign: "center",
+                  fontWeight: "500"
+                }}>
+                  🛒 Click any product to view on Marketplace
+                </p>
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
-};
-
-export default IndiaMapWrapper;
+}

@@ -62,11 +62,34 @@ interface RazorpayInstance {
   open: () => void;
 }
 
+const loadRazorpayScript = (): Promise<boolean> => {
+  return new Promise((resolve) => {
+    if (typeof window === 'undefined') {
+      resolve(false);
+      return;
+    }
+    if ((window as any).Razorpay) {
+      resolve(true);
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
+
 const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
   const { cartItems, removeFromCart, updateQuantity, getTotalPrice, checkout } = useCart();
   const router = useRouter();
+  const [isRazorpayReady, setIsRazorpayReady] = useState(false);
 
-  const handleCheckout = (): void => {
+  useEffect(() => {
+    loadRazorpayScript().then(setIsRazorpayReady);
+  }, []);
+
+  const handleCheckout = async (): Promise<void> => {
     const total = getTotalPrice();
 
     if (total === 0) {
@@ -74,15 +97,17 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
       return;
     }
 
+    const isRazorpayLoaded = typeof window !== 'undefined' && (window as any).Razorpay;
+    const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_SYfCbC9JRs3fjZ";
+
     const options: RazorpayOptions = {
-      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_YOUR_KEY_HERE",
+      key: razorpayKey,
       amount: total * 100,
       currency: "INR",
       name: "Rangmanch",
       description: "Authentic Cultural Heritage Purchase",
       image: "https://example.com/your_logo",
       handler: function (_response: RazorpayResponse) {
-        // Payment processed
         checkout('razorpay').then(order => {
           if (order) {
             onClose();
@@ -100,42 +125,63 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
       }
     };
 
-    try {
-      if (typeof window !== 'undefined' && window.Razorpay) {
-        const rzp1 = new window.Razorpay(options);
-        rzp1.open();
-      } else {
-        throw new Error("Razorpay not loaded");
-      }
-    } catch (error) {
-      console.error("Payment Error:", error);
-      // Graceful fallback UI
-      if (typeof window !== 'undefined') {
-        const fallbackMessage = `
+    if (!isRazorpayLoaded) {
+      const fallbackMessage = `
           ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           🏺 RANGMANCH HERITAGE MARKETPLACE
           ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          
+
           Payment Processing
-          
+
           • Order Total: ₹${total.toLocaleString('en-IN')}
           • Artisan Heritage Items: ${cartItems.length}
-          
+
           Your order supports traditional Indian artisans
           and preserves cultural heritage techniques.
-          
+
           Confirm to complete your heritage acquisition?
           ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         `;
-        
-        if (window.confirm(fallbackMessage)) {
-          checkout('cod').then(order => {
-            if (order) {
-              onClose();
-              router.push("/orders");
-            }
-          });
-        }
+
+      if (window.confirm(fallbackMessage)) {
+        checkout('cod').then(order => {
+          if (order) {
+            onClose();
+            router.push("/orders");
+          }
+        });
+      }
+      return;
+    }
+
+    try {
+      const rzp1 = new (window as any).Razorpay(options);
+      rzp1.open();
+    } catch (error) {
+      const fallbackMessage = `
+          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          🏺 RANGMANCH HERITAGE MARKETPLACE
+          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+          Payment Processing
+
+          • Order Total: ₹${total.toLocaleString('en-IN')}
+          • Artisan Heritage Items: ${cartItems.length}
+
+          Your order supports traditional Indian artisans
+          and preserves cultural heritage techniques.
+
+          Confirm to complete your heritage acquisition?
+          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        `;
+
+      if (window.confirm(fallbackMessage)) {
+        checkout('cod').then(order => {
+          if (order) {
+            onClose();
+            router.push("/orders");
+          }
+        });
       }
     }
   };

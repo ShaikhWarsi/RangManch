@@ -1,21 +1,14 @@
 'use client'
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { 
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-  User as FirebaseUser
-} from 'firebase/auth';
-import { auth, isDemoMode } from '../firebase/config';
+import { authService } from '../services/authService';
 
-// TypeScript interfaces
 export interface User {
   uid: string;
   email: string;
   displayName?: string;
   role?: string;
+  isDemoAccount?: boolean;
   [key: string]: any;
 }
 
@@ -29,10 +22,8 @@ export interface AuthContextType {
   logout: () => Promise<void>;
 }
 
-// Create context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Custom hook to use auth context
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
   if (context === undefined) {
@@ -41,78 +32,64 @@ export function useAuth(): AuthContextType {
   return context;
 }
 
-// Demo authentication functions for when Firebase is not configured
+const DEMO_ACCOUNTS = {
+  buyer: {
+    email: 'demo.buyer@rangmanch.in',
+    password: 'demo123456',
+    role: 'buyer',
+    displayName: 'Demo Buyer'
+  },
+  artisan: {
+    email: 'demo.artisan@rangmanch.in',
+    password: 'demo123456',
+    role: 'artisan',
+    displayName: 'Demo Artisan'
+  },
+  ngo: {
+    email: 'demo.ngo@rangmanch.in',
+    password: 'demo123456',
+    role: 'ngo',
+    displayName: 'Demo NGO'
+  }
+};
+
 const demoAuth = {
-  async signup(email: string, password: string, userData: any): Promise<User> {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return {
-      uid: Math.random().toString(36).substring(7),
-      email,
-      displayName: userData.name || email,
-      role: userData.role || 'buyer',
-      ...userData
-    };
-  },
-
   async login(email: string, password: string): Promise<User> {
-    // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 500));
-    return {
-      uid: Math.random().toString(36).substring(7),
-      email,
-      displayName: email.split('@')[0],
-      role: email.includes('artisan') ? 'artisan' : email.includes('ngo') ? 'ngo' : 'buyer'
-    };
+    const account = Object.values(DEMO_ACCOUNTS).find(acc => acc.email === email);
+    if (account && account.password === password) {
+      return {
+        uid: Math.random().toString(36).substring(7),
+        email: account.email,
+        displayName: account.displayName,
+        role: account.role,
+        isDemoAccount: true
+      };
+    }
+    throw new Error('Invalid demo credentials');
   },
-
   async logout(): Promise<void> {
-    // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 300));
   }
 };
 
-// AuthProvider component
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [isDemoMode, setIsDemoMode] = useState<boolean>(true);
 
-  // Check for existing session on mount
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        // Try to use real Firebase first
-        if (auth && !isDemoMode) {
-          // Real Firebase mode
-          const unsubscribe = onAuthStateChanged(auth, (user) => {
-            if (user) {
-              const firebaseUser: User = {
-                uid: user.uid,
-                email: user.email || '',
-                displayName: user.displayName || user.email?.split('@')[0],
-                role: 'buyer' // Default role, could be stored in Firestore
-              };
-              setCurrentUser(firebaseUser);
-              setUserRole(firebaseUser.role || 'buyer');
-            } else {
-              setCurrentUser(null);
-              setUserRole(null);
-            }
-            setLoading(false);
-          });
-
-          return () => unsubscribe();
-        } else {
-          // Demo mode - use imported flag
-          const savedUser = localStorage.getItem('currentUser');
-          if (savedUser) {
-            const user = JSON.parse(savedUser);
-            setCurrentUser(user);
-            setUserRole(user.role || 'buyer');
-          }
-          setLoading(false);
+        const savedUser = localStorage.getItem('currentUser');
+        if (savedUser) {
+          const user = JSON.parse(savedUser);
+          setCurrentUser(user);
+          setUserRole(user.role || 'buyer');
+          setIsDemoMode(user.isDemoAccount || true);
         }
+        setLoading(false);
       } catch (error) {
         setLoading(false);
       }
@@ -121,77 +98,62 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     checkAuth();
   }, []);
 
-  // Sign up function
   const signup = async (email: string, password: string, userData: any): Promise<void> => {
     try {
-      if (isDemoMode) {
-        // Demo mode signup
-        const user = await demoAuth.signup(email, password, userData);
+      const response = await authService.signup(email, password, userData);
+      if (response.success) {
+        const user: User = {
+          uid: response.user?.uid || Math.random().toString(36).substring(7),
+          email: response.user?.email || email,
+          displayName: response.user?.displayName || userData?.name || email.split('@')[0],
+          role: response.user?.role || userData?.role || 'buyer',
+          isDemoAccount: response.isDemoMode || false
+        };
         setCurrentUser(user);
         setUserRole(user.role || 'buyer');
+        setIsDemoMode(user.isDemoAccount || false);
         localStorage.setItem('currentUser', JSON.stringify(user));
-      } else {
-        // Real Firebase signup
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const firebaseUser: User = {
-          uid: userCredential.user.uid,
-          email: userCredential.user.email || '',
-          displayName: userData.name || userCredential.user.email?.split('@')[0],
-          role: userData.role || 'buyer',
-          ...userData
-        };
-        setCurrentUser(firebaseUser);
-        setUserRole(firebaseUser.role || 'buyer');
       }
     } catch (error) {
-      // Signup error
       throw error;
     }
   };
 
-  // Login function
   const login = async (email: string, password: string): Promise<void> => {
     try {
-      if (isDemoMode) {
-        // Demo mode login
-        const demoUser = await demoAuth.login(email, password);
-        setCurrentUser(demoUser);
-        setUserRole(demoUser.role || 'buyer');
-        localStorage.setItem('currentUser', JSON.stringify(demoUser));
-      } else {
-        // Real Firebase login
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const firebaseUser: User = {
-          uid: userCredential.user.uid,
-          email: userCredential.user.email || '',
-          displayName: userCredential.user.displayName || userCredential.user.email?.split('@')[0],
-          role: 'buyer' // Could be fetched from Firestore
+      const response = await authService.login(email, password);
+      if (response.success) {
+        const user: User = {
+          uid: response.user?.uid || Math.random().toString(36).substring(7),
+          email: response.user?.email || email,
+          displayName: response.user?.displayName || email.split('@')[0],
+          role: response.user?.role || (email.includes('artisan') ? 'artisan' : email.includes('ngo') ? 'ngo' : 'buyer'),
+          isDemoAccount: response.isDemoMode || false
         };
-        setCurrentUser(firebaseUser);
-        setUserRole(firebaseUser.role || 'buyer');
+        setCurrentUser(user);
+        setUserRole(user.role || 'buyer');
+        setIsDemoMode(user.isDemoAccount || false);
+        localStorage.setItem('currentUser', JSON.stringify(user));
+        if (response.session?.access_token) {
+          localStorage.setItem('authToken', response.session.access_token);
+        }
       }
     } catch (error) {
-      // Login error
       throw error;
     }
   };
 
-  // Logout function
   const logout = async (): Promise<void> => {
     try {
-      if (isDemoMode) {
-        // Demo mode logout
-        await demoAuth.logout();
-        localStorage.removeItem('currentUser');
-      } else {
-        // Real Firebase logout
-        await signOut(auth);
-      }
+      await authService.logout();
+    } catch (error) {
+      // Ignore logout errors
+    } finally {
+      localStorage.removeItem('currentUser');
+      localStorage.removeItem('authToken');
       setCurrentUser(null);
       setUserRole(null);
-    } catch (error) {
-      // Logout error
-      throw error;
+      setIsDemoMode(true);
     }
   };
 

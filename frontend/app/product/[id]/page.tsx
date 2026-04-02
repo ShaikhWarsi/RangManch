@@ -24,6 +24,19 @@ interface ProductPageProps {
   params: { id: string }
 }
 
+// Generate static params for all product pages
+export async function generateStaticParams() {
+  // Return sample product IDs for static generation
+  // In production, fetch this from your API
+  return [
+    { id: '1' },
+    { id: '2' },
+    { id: '3' },
+    { id: '4' },
+    { id: '5' },
+  ];
+}
+
 export default async function ProductPage({ params }: ProductPageProps) {
   let product = null;
   

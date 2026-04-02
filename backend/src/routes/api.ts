@@ -21,14 +21,10 @@ import {
   validateMongoId,
   validateStateName
 } from "../middleware/validation";
-import Razorpay from 'razorpay';
 import { MongoClient } from 'mongodb';
-import cors from './cors';
+import Razorpay from 'razorpay';
 
 const router = Router();
-
-// Apply CORS middleware
-router.use(cors);
 
 // Razorpay configuration
 const razorpay = new Razorpay({
@@ -195,7 +191,7 @@ router.post('/create-order', async (req: any, res: any) => {
     
     // Notify artisan (in real implementation, this would send email/SMS)
     console.log('Order created:', order.id);
-    console.log('Artisan notified for products:', products.map(p => p.name));
+    console.log('Artisan notified for products:', products.map((p: any) => p.name));
     
     res.json({
       success: true,
@@ -204,18 +200,18 @@ router.post('/create-order', async (req: any, res: any) => {
       message: 'Order created successfully'
     });
     
-  } catch (error) {
+  } catch (error: any) {
     console.error('Razorpay order creation error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to create order',
-      message: error.message
+      message: error?.message || 'Unknown error'
     });
   }
 });
 
 // Get Order Status
-router.get('/order-status/:orderId', async (req, res) => {
+router.get('/order-status/:orderId', async (req: any, res: any) => {
   try {
     const { orderId } = req.params;
     
@@ -239,18 +235,18 @@ router.get('/order-status/:orderId', async (req, res) => {
       });
     }
     
-  } catch (error) {
+  } catch (error: any) {
     console.error('Order status error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to get order status',
-      message: error.message
+      message: error?.message || 'Unknown error'
     });
   }
 });
 
 // Webhook for Razorpay payment confirmation
-router.post('/razorpay-webhook', async (req, res) => {
+router.post('/razorpay-webhook', async (req: any, res: any) => {
   try {
     const razorpaySignature = req.headers['x-razorpay-signature'];
     const receivedSignature = req.body;
@@ -288,7 +284,7 @@ router.post('/razorpay-webhook', async (req, res) => {
     
     res.json({ success: true });
     
-  } catch (error) {
+  } catch (error: any) {
     console.error('Webhook error:', error);
     res.status(500).json({ error: 'Webhook processing failed' });
   }

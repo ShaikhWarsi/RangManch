@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
-import { LoadingPage } from './LoadingPage';
 import { defaultTheme } from '../types/theme';
 
 // TypeScript interfaces
@@ -97,9 +96,16 @@ const LoginPage: React.FC = () => {
     }
   };
 
-  // Show loading page while initializing
+  // Show loading state while initializing
   if (pageLoading) {
-    return <LoadingPage onLoadingComplete={() => setPageLoading(false)} />;
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: defaultTheme.colors.ivory }}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-maroon border-t-transparent mx-auto"></div>
+          <p className="mt-4" style={{ color: defaultTheme.colors.walnut }}>Loading...</p>
+        </div>
+      </div>
+    );
   }
 
   return (

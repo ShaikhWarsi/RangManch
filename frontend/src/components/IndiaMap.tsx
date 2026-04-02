@@ -559,8 +559,7 @@ const IndiaMap: React.FC = () => {
                 onClick={() => {
                   const stateFeature = (data as any).features.find((f: any) => f.properties.ST_NM === state);
                   if (stateFeature) {
-                    const bounds = L.geoJSON(stateFeature).getBounds();
-                    handleStateClick(stateFeature, bounds);
+                    handleStateClick(state);
                     if (isMobile) setShowMobilePanel(false);
                   }
                 }}

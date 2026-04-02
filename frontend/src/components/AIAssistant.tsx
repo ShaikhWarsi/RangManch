@@ -40,7 +40,8 @@ export const AIAssistant: React.FC = () => {
     setIsTyping(true)
 
     try {
-      const recommendation = await GroqService.getCraftRecommendation(inputText)
+      const groqService = new GroqService()
+      const recommendation = await groqService.getCraftRecommendation(inputText)
       
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),

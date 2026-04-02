@@ -1,4 +1,4 @@
-import { NGODashboard } from '../../components/NGODashboard'
+import { NGODashboard } from '@/components/NGODashboard'
 import ProtectedRoute from '@/components/ProtectedRoute'
 
 export default function NGODashboardRoute() {

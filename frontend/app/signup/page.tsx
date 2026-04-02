@@ -1,4 +1,4 @@
-import SignUpPage from '../../components/SignUpPage'
+import SignUpPage from '@/components/SignUpPage'
 
 export const dynamic = 'force-dynamic'
 

@@ -22,7 +22,8 @@ export const AICraftRecommender: React.FC = () => {
     setConversation(prev => [...prev, { role: 'user', content: query }])
     
     try {
-      const result = await GroqService.getCraftRecommendation(query)
+      const groqService = new GroqService()
+      const result = await groqService.getCraftRecommendation(query)
       setRecommendation(result)
       
       // Add AI response to conversation

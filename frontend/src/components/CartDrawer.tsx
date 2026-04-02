@@ -83,11 +83,12 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
       image: "https://example.com/your_logo",
       handler: function (_response: RazorpayResponse) {
         // Payment processed
-        const order = checkout();
-        if (order) {
-          onClose();
-          router.push("/orders");
-        }
+        checkout('razorpay').then(order => {
+          if (order) {
+            onClose();
+            router.push("/orders");
+          }
+        });
       },
       prefill: {
         name: "Customer Name",
@@ -128,11 +129,12 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
         `;
         
         if (window.confirm(fallbackMessage)) {
-          const order = checkout();
-          if (order) {
-            onClose();
-            router.push("/orders");
-          }
+          checkout('cod').then(order => {
+            if (order) {
+              onClose();
+              router.push("/orders");
+            }
+          });
         }
       }
     }

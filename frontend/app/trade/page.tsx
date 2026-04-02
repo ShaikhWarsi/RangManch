@@ -1,4 +1,4 @@
-import TradePage from '../../components/NewEcommerce'
+import TradePage from '@/components/NewEcommerce'
 
 export default function TradePageRoute() {
   return <TradePage />

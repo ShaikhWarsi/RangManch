@@ -1,13 +1,20 @@
 import cors from 'cors';
 
+// Define allowed origins with proper typing
+const allowedOrigins: string[] = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'https://rangmanch.netlify.app',
+  'https://rangmanch.vercel.app'
+];
+
+// Add environment-specific frontend URL if defined
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL);
+}
+
 const corsOptions = {
-  origin: [
-    'http://localhost:3000',
-    'http://localhost:3001',
-    'https://rangmanch.netlify.app', // Production frontend
-    'https://rangmanch.vercel.app', // Alternative production
-    process.env.FRONTEND_URL // Environment-specific frontend
-  ].filter(Boolean),
+  origin: allowedOrigins,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: [
     'Origin',

@@ -42,27 +42,6 @@ const StatePage = () => {
     walnut: theme.colors.walnut,
     sand: theme.colors.sand
   };
-    "tamilnadu": {
-      primary: "#1A5276", // Deep Blue
-      secondary: "#E74C3C", // Red
-      accent: "#F39C12", // Orange
-      background: "#F4F6F7" // Light blue
-    },
-    "default": {
-      primary: "#2C3E50", // Dark Blue
-      secondary: "#E74C3C", // Red
-      accent: "#3498DB", // Light Blue
-      background: "#F8F9F9" // Light gray
-    }
-  };
-
-  // Get colors for current state
-  const getStateColors = (): StateColors => {
-    const key = typeof stateName === 'string' ? stateName.toLowerCase() : "default";
-    return stateColors[key] || stateColors.default;
-  };
-
-  const colors = getStateColors();
 
   // Sample data structure for all states
   const allStatesData: AllStatesData = {

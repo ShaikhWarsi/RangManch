@@ -1,240 +1,276 @@
-# RangManch - India's Heritage Marketplace
+<div align="center">
+  <img src="https://via.placeholder.com/150/A0522D/FFFFFF?text=RangManch" alt="RangManch Logo" width="150" height="150" />
+  <h1>RangManch: India's Direct-to-Artisan Marketplace</h1>
+  <p><strong>Empowering Craftsmen via Next.js, Supabase, and PostgreSQL</strong></p>
+  <p><i>A "Legacy-as-a-Service" platform bridging the gap between rural artisans and global conscious consumers.</i></p>
 
-**Built by Team AC-DC** | Preserving Traditional Crafts Through Modern Technology
-
-## 🎯 The Problem We Solve
-
-India's traditional crafts are at risk of disappearing. Master artisans struggle to reach customers, young generations are losing connection to their cultural heritage, and centuries-old techniques are being lost to mass production.
-
-**RangManch bridges this gap** by creating a direct marketplace that connects authentic artisans with conscious consumers who value craftsmanship and cultural preservation.
-
-## 🎯 Our Solution
-
-**Digital Heritage Preservation Platform** that:
-- **Empowers Artisans** - Direct access to national and international markets
-- **Educates Consumers** - Stories behind each craft and artisan
-- **Preserves Techniques** - Documentation and video of traditional methods
-- **Ensures Fair Trade** - Artisans receive 80%+ of sale price directly
-- **Builds Community** - Connects artisans with each other and customers
-
-## 🎯 Who It's For
-
-**For Artisans:**
-- Master craftspeople seeking fair market access
-- Traditional artisans wanting to preserve their heritage
-- Rural craftspeople needing digital marketplace presence
-
-**For Consumers:**
-- Conscious buyers seeking authentic, handmade products
-- Cultural enthusiasts wanting to support traditional arts
-- Interior designers looking for unique artisan pieces
-
-**For Cultural Organizations:**
-- NGOs working to preserve traditional crafts
-- Government agencies promoting cultural heritage
-- Educational institutions teaching traditional techniques
-
-## 🚀 Live Demo
-**🔗 [Live Demo](https://rangmanch-demo.netlify.app/)**
-
-**📹 [Demo Video](https://youtu.be/demo-video-link)** - Watch our 2-minute feature walkthrough
-
-## 🛠️ Tech Stack
-- **Frontend:** Next.js 14, React 18, TypeScript, Tailwind CSS
-- **Backend:** Node.js, Express.js, Firebase
-- **UI/UX:** Lucide Icons, GSAP Animations, Responsive Design
-- **Deployment:** Netlify (Static Export)
-
-## 🎨 Key Features
-- ✅ **Verified Artisan Profiles** - Authentic master craftspeople
-- 🗺️ **Cultural Heritage Map** - Explore crafts by region
-- 🛍️ **Secure Marketplace** - Direct artisan-to-customer sales
-- 📱 **Role-Based Access** - Buyer, Artisan, NGO roles
-- 🎯 **Smart Filtering** - By craft, region, price
-- 📊 **Real-Time Analytics** - Sales dashboard for artisans
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Node.js 18+ 
-- npm or yarn
-- Git
-
-### Step 1: Clone & Setup
-```bash
-git clone https://github.com/your-username/INNOVIT-Team-SciCo-main.git
-cd INNOVIT-Team-SciCo-main/frontend
-```
-
-### Step 2: Environment Setup
-```bash
-# Copy environment template
-cp .env.example .env.local
-
-# Edit with your values
-nano .env.local
-```
-
-### Step 3: Install Dependencies
-```bash
-npm install
-# or
-yarn install
-```
-
-### Step 4: Run Development Server
-```bash
-npm run dev
-# or
-yarn dev
-```
-
-**🌐 Open [http://localhost:3000](http://localhost:3000)**
-
-## 🔐 Demo Credentials
-For instant demo access, use these credentials:
-
-**Buyer Account:**
-- Email: `buyer@demo.com`
-- Password: `demo123`
-
-**Artisan Account:**
-- Email: `artisan@demo.com` 
-- Password: `demo123`
-
-**NGO Account:**
-- Email: `ngo@demo.com`
-- Password: `demo123`
-
-## 📱 Demo Flow
-1. **Login** with demo credentials
-2. **Browse** the marketplace for authentic crafts
-3. **Explore** the cultural heritage map
-4. **View** verified artisan profiles
-5. **Add items** to cart and checkout
-6. **Switch roles** using the role switcher (bottom-right)
-
-## 🏗️ Project Structure
-```
-frontend/
-├── app/                 # Next.js App Router
-├── src/
-│   ├── components/      # Reusable UI components
-│   ├── context/        # React Context (Auth, Cart)
-│   ├── firebase/        # Firebase configuration
-│   ├── legacy-pages/   # Page components
-│   └── services/       # API services
-├── public/             # Static assets
-└── styles/            # Global styles
-```
-
-## 🚀 Deployment
-```bash
-# Build for production
-npm run build
-
-# Deploy to Netlify (or your preferred platform)
-npm run deploy
-```
-
-## 🎯 Key Features Implemented
-
-### ✅ High-Impact Features
-- **404 Page** - On-brand error handling
-- **Skeleton Loaders** - Professional loading states
-- **Firebase Demo Mode** - Graceful fallback handling
-- **Micro-interactions** - Hover states and transitions
-- **Auth Flow** - Complete login/signup with error states
-- **Breadcrumb Navigation** - User-friendly navigation
-
-### 🎨 UI/UX Enhancements
-- **Diverse Artisan Photos** - Professional, varied imagery
-- **Trust Badges** - Verified Artisan, Secure Checkout
-- **Hover States** - Interactive feedback on all elements
-- **Empty States** - Helpful CTAs and guidance
-- **Network Error Handling** - User-friendly error toasts
-
-## 🤝 Contributing
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📄 License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-- **Firebase** - Authentication and database services
-- **Unsplash** - Professional artisan photography
-- **Lucide** - Beautiful icon library
-- **Tailwind CSS** - Utility-first CSS framework
+  <p>
+    <img src="https://img.shields.io/badge/Next.js-14%2B-black?style=for-the-badge&logo=next.js" alt="Next.js" />
+    <img src="https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase" />
+    <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
+    <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+  </p>
+</div>
 
 ---
 
-**Built with ❤️ by Team AC-DC for the preservation of India's cultural heritage.**
-git clone https://github.com/your-org/Team-AC-DC.git
+## 📖 Table of Contents
+1. [Executive Summary](#-executive-summary)
+2. [The Problem & Our Solution](#-the-problem--our-solution)
+3. [High-Level System Architecture](#%EF%B8%8F-1-high-level-system-architecture)
+4. [Tech Stack](#-2-tech-stack)
+5. [Data Flow & Transaction Lifecycle](#-3-data-flow--transaction-lifecycle)
+6. [Database Schema](#-4-database-schema-relational-model)
+7. [Key Functional Modules](#-5-key-functional-modules)
+8. [Security & Performance](#%EF%B8%8F-6-security--performance-design)
+9. [Development Roadmap](#-7-development-roadmap)
+10. [Local Setup Instructions](#%EF%B8%8F-8-local-setup-instructions)
+11. [Coding Conventions & Design Philosophy](#-9-coding-conventions--design-philosophy)
+
+---
+
+## 🚀 Executive Summary
+Rangmanch is a specialized digital marketplace designed to bridge the gap between rural artisans and global consumers. Operating as a next-generation "Legacy-as-a-Service" platform, it provides Indian artisans with a high-performance, cinematic marketplace using modern cloud infrastructure. By providing a decentralized, creator-first ecosystem, the platform brings previously localized art forms to a national and international audience.
+
+## 🛑 The Problem & Our Solution
+
+### Market Gaps
+* **High Barriers to Entry:** Current platforms require high technical literacy, upfront GST registration, and complex inventory management.
+* **Financial Exploitation:** Middlemen and high platform commissions eat up to 70% of actual profit margins.
+* **Communication Deficit:** Lack of direct communication channels for custom orders or bulk negotiations.
+* **Loss of Cultural Context:** Standard e-commerce treats handmade crafts as mere commodities, losing the rich legacy behind them.
+
+### The RangManch Solution
+Rangmanch provides a **"Zero-Barrier"** entry point featuring simplified mobile-first listings, localized regional discovery filters, and a dual-action commerce model that combines secure checkout with direct WhatsApp communication.
+
+---
+
+## 🏛️ 1. High-Level System Architecture
+
+This diagram illustrates how the **Next.js frontend** interacts with the **Express backend** and **Supabase/PostgreSQL services**.
+
+```mermaid
+graph TD
+    subgraph "Client Tier (Frontend)"
+        A[Next.js App Router] --> B[React Components]
+        B --> C[GSAP/Framer Motion Animations]
+        B --> D[Supabase Auth Hooks]
+    end
+
+    subgraph "Server Tier (API Middleware)"
+        E[Express.js Server] --> F[Auth Middleware]
+        F --> G[Route Handlers]
+        G --> H[Controller Logic]
+    end
+
+    subgraph "Data & Service Tier"
+        I[(Supabase PostgreSQL)] 
+        J[Supabase Auth Service]
+        K[Supabase Edge Functions]
+    end
+
+    A <-->|REST API| E
+    A <-->|Auth Tokens| J
+    E <-->|Queries| I
+    E <-->|Identity Check| J
 ```
 
-### Step 2: Frontend Setup
+---
 
-Open your terminal and navigate to the 'frontend' folder of your project using the cd command.
+## 📦 2. Tech Stack
+
+| Category | Technology |
+| :--- | :--- |
+| **Frontend Framework** | Next.js 14/15 (Server Components, ISR Edge Caching) |
+| **UI & Styling** | React 19, Tailwind CSS, Lucide React, React Leaflet |
+| **Animations** | GSAP, Framer Motion, React Spring (Parallax) |
+| **Backend Environment**| Node.js, Express.js (TypeScript), Custom Middleware |
+| **Database** | PostgreSQL (Hosted on Supabase), Node-Postgres (`pg`) |
+| **Authentication** | Supabase Auth (GoTrue), RBAC (Role-Based Access Control) |
+| **Payments** | Razorpay (India/UPI/RuPay) & Stripe (Global CC processing) |
+
+---
+
+## 🔄 3. Data Flow & Transaction Lifecycle
+
+This flowchart tracks the journey from a user logging in to a purchase being finalized and payment being routed.
+
+```mermaid
+sequenceDiagram
+    participant U as User (Buyer/Artisan)
+    participant F as Frontend (Next.js)
+    participant B as Backend (Express)
+    participant S as Supabase (Auth/DB)
+    participant P as Payment Gateway (Razorpay/Stripe)
+
+    U->>F: Authenticate (Login/Signup)
+    F->>S: Verify Identity via Supabase Auth
+    S-->>F: Return JWT Token
+    U->>F: Browse Craft / Add to Cart
+    F->>B: POST /api/orders (with JWT)
+    B->>S: Validate Token & Check Stock
+    S-->>B: Success / Failure
+    B->>P: Generate Order ID
+    P-->>F: Trigger Checkout Modal
+    U->>P: Submit Payment
+    P-->>B: Webhook: Payment Success
+    B->>S: Update `orders` status & Deduct `stock`
+    B-->>F: Order Confirmed Notification
+```
+
+---
+
+## 🧬 4. Database Schema (Relational Model)
+
+Unlike NoSQL, our PostgreSQL ER-Diagram focuses on ACID compliance, strict data integrity, and complex relational mapping.
+
+```mermaid
+erDiagram
+    USERS ||--o{ PRODUCTS : manages
+    USERS ||--o{ ORDERS : places
+    STATES ||--o{ PRODUCTS : "origin of"
+    PRODUCTS ||--o{ ORDERS : itemized
+    
+    USERS {
+        uuid id PK
+        string email
+        string full_name
+        string avatar_url
+        enum role "artisan | buyer | ngo"
+        string location
+        string craft_specialization
+    }
+    
+    PRODUCTS {
+        uuid id PK
+        uuid artisan_id FK
+        string title
+        string slug
+        text description
+        decimal base_price
+        integer stock_quantity
+        string material_used
+    }
+    
+    ORDERS {
+        uuid id PK
+        uuid buyer_id FK
+        uuid artisan_id FK
+        uuid product_id FK
+        decimal total_amount
+        string status "pending | shipped | delivered | cancelled"
+        string transaction_id
+        string payout_status
+    }
+
+    STATES {
+        string state_name PK
+        string legacy_description
+        string image_banner
+        jsonb craft_list
+    }
+```
+
+---
+
+## ✨ 5. Key Functional Modules
+
+### 🗺️ Cultural Heritage Navigator (Map Component)
+An interactive Geo-Map built with `react-leaflet`. Users click on Indian states (e.g., Rajasthan) to trigger an optimized query to the `states_cultural_data` table, pulling curated lists of local crafts (like Blue Pottery or Sanganeri print) and active artisans.
+
+### 🎭 Artisan Storytelling (Parallax)
+Using `@react-spring/parallax`, we create an immersive "Digital Workshop". Users scroll vertically to see an artisan's process, tools, and materials in a cinematic horizontal layout.
+
+### 🛍️ D2C Marketplace
+* **Smart Search:** Utilizes PostgreSQL's native Full-Text Search (`tsvector`) to interpret queries, finding products by material, state, or technique despite misspellings.
+* **Inventory Sync:** Real-time stock updates handled via database triggers and ACID transactions to prevent overselling of one-of-a-kind items.
+
+### 🔐 Multi-Role Dashboards & Artisan Trust Verification
+* **Artisan Portal:** Inventory management, sales tracking, and direct customer WhatsApp queries.
+* **Buyer Portal:** Order history, tracking, and "Verification Badges" for craft authenticity.
+* **NGO Inspectorate:** Oversight dashboard allowing registered NGOs to review, physically audit, and issue a prominent "Blue Check" authenticity badge to vetted artisan profiles.
+
+---
+
+## 🛡️ 6. Security & Performance Design
+
+* **Edge Session Validation:** Next.js edge middleware evaluates Supabase session cookies before granting access to protected routes.
+* **Row-Level Security (RLS):** Database-layer protection where artisans can only mutate their own listings, buyers have read-only access to public catalogs, and NGOs get specialized view capabilities.
+* **Aggressive Indexing:** B-Tree indexing on primary/foreign keys and GIN (Generalized Inverted Index) on `JSONB` columns for sub-millisecond query results during festive season traffic spikes.
+* **Edge Caching & CDNs:** Next.js ISR (Incremental Static Regeneration) dynamically caches heavy product pages globally, refreshing them in the background.
+
+---
+
+## 🗺️ 7. Development Roadmap
+
+* **Phase 1 (Stabilization):** Complete rigorous migration to the PostgreSQL schema and establish base RLS policies.
+* **Phase 2 (Visuals & UI/UX):** Enhance Parallax storytelling sections and implement the Heritage Navigator map.
+* **Phase 3 (Mobile & Accessibility):** Progressive Web App (PWA) tailored for remote rural areas with low-bandwidth, enabling offline product draft creation.
+* **Phase 4 (AI Integration):** Supabase Edge Functions linked with lightweight ML models for automated craft recognition, quality assurance, and image auto-tagging.
+
+---
+
+## 🛠️ 8. Local Setup Instructions
+
+**Prerequisites**
+* Node.js 18+
+* A Supabase Project (URL & Anon Key)
+* PostgreSQL (Active on Supabase)
+
+### Step 1: Clone & Configure
+```bash
+git clone [https://github.com/your-repo/RangManch.git](https://github.com/your-repo/RangManch.git)
+cd RangManch
+```
+Create a `.env` in both `/frontend` and `/backend`:
+```env
+# /frontend/.env.local
+NEXT_PUBLIC_SUPABASE_URL=your_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+
+# /backend/.env
+DATABASE_URL=your_postgresql_connection_string
+PORT=5000
+```
+
+### Step 2: Install & Launch
+**Frontend:**
 ```bash
 cd frontend
-```
-
-Install the frontend dependencies by running:
-```bash
 npm install
+npm run dev
 ```
 
-Start the React development server:
-```bash
-npm run start
-```
-
-This will launch your React application, and you can access it in your web browser at http://localhost:3000. Any changes you make to the code will automatically trigger hot-reloading.
-
-### Step 3: Backend Setup
-Open a new terminal window or tab and navigate to the 'backend' folder of your project using the cd command.
+**Backend:**
 ```bash
 cd backend
-```
-
-Install the backend dependencies by running:
-```bash
 npm install
+npm run dev
 ```
 
-Start the backend server:
-```bash
-npm run start
-```
+---
 
-Your backend server is now up and running, and it will be accessible at the specified port.
+## 🎨 9. Coding Conventions & Design Philosophy
 
-Your React project is now set up with both frontend and backend components. You can start building your application by modifying the code in the 'frontend' and 'backend' folders.
+### Conventions
+* **TypeScript:** Strict mode enabled globally. Explicit interfaces/types for all APIs, DB schemas, and component props.
+* **Commit Logic:** Enforced Atomic commits (e.g., `feat:`, `fix:`, `chore:`, `docs:`).
+* **Environment Safety:** Absolute zero-trust policy. All secrets stay in `.env.local` and are ignored by Git.
 
-If you encounter any issues or have questions, please refer to the project's documentation or seek help from the development team.
+### Design Philosophy
+* **Aesthetic:** Neo-Traditional / Glassmorphic.
+* **Color Palette:** Burnt Sienna (`#A0522D`), Saffron (`#F4C430`), and Deep Charcoal.
+* **Typography:** *Outfit* for headers, *Inter* for readable body text.
 
-Feel free to explore and enjoy working on your new React project!
+---
 
-## Originality Statement:
-While we used the initial codebase as our foundation, approximately 85% of the current implementation represents our original work, including all design elements, cultural content, and advanced features that align with our unique vision of digital heritage preservation.
+## 👥 Team
+**Team: AC-DC** (Hack Matrix Hackathon - VIT Bhopal, April 2026)
+* **Rachit Tiwari** (24BAI10309)
+* **Shaikh Mohammad Warsi** (24BAI10046)
 
-## AI Tools Usage & Code Comments Statement:
-In the interest of efficient development and adhering to the hackathon's timeline and constraints, we utilized AI-assisted tools to accelerate coding, debugging, and documentation processes. However, the core idea, design approach, content structure, and overall vision of the project are entirely original and conceived by Team AC-DC. The AI tools served as productivity enhancers, not creative replacements.
+## 📜 License
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-**Note on Commented Code:** The codebase contains intentionally preserved commented sections and code snippets. These serve as:
-- Reference points for different implementation scenarios
-- Alternative approaches for future enhancements
-- Helpful guidance for developers extending the project
-- Documentation of our development journey
-
-These comments reflect our development process and provide flexibility for future enhancements without losing context.
-
-## 🎯 Our Development Journey
-
-We built RangManch from concept to production, creating a comprehensive platform that addresses real-world challenges in cultural heritage preservation and artisan empowerment.
-
-Team AC-DC
+---
+*Built with ❤️ by Team AC-DC for India's Craftsmanship Revolution.*

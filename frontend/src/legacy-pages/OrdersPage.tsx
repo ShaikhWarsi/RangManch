@@ -52,7 +52,7 @@ export const OrdersPage: React.FC = () => {
           <img
             src="https://images.unsplash.com/photo-1589578527966-04d7c15ad48a?w=1600&h=400&fit=crop"
             alt="Heritage"
-            className="w-full h-full object-cover grayscale"
+            className="w-full h-full object-cover grayscale loading=lazy"
           />
         </div>
 
@@ -142,7 +142,7 @@ export const OrdersPage: React.FC = () => {
                         <img
                           src={item.img || item.image}
                           alt={item.name || item.title || "Product"}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                          className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 loading=lazy"
                         />
                       </div>
 

@@ -113,7 +113,6 @@ const AddData: React.FC = () => {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      console.log('Form submitted:', formData);
       setSuccess(true);
       
       // Reset form after successful submission

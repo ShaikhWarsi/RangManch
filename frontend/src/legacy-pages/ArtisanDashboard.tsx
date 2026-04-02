@@ -158,8 +158,6 @@ export const ArtisanDashboard: React.FC = () => {
     try {
       const prompt = `Generate a poetic and culturally rich product description for an Indian handicraft named "${productForm.name}" in category "${productForm.category}". Focus on heritage, craftsmanship, and soul.`;
       
-      console.log("Calling Gemini with prompt:", prompt);
-      
       setTimeout(() => {
         const aiDescriptions: Record<string, string> = {
           sarees: `Woven with the threads of time, this ${productForm.name} is a masterpiece of Indian textile heritage. Each motif tells a story of the artisan's soul, carrying the weight of centuries-old traditions into the modern world. Perfect for the woman who wears her culture with pride.`,

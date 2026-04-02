@@ -9,8 +9,8 @@ import ConnectionStatus from '@/components/ConnectionStatus'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'AC-DC - Innovation Team',
-  description: 'Cultural Heritage Platform',
+  title: 'RangManch - Cultural Heritage Platform',
+  description: 'Connecting artisans and collectors to preserve India\'s timeless heritage',
 }
 
 export default function RootLayout({
@@ -25,6 +25,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link rel="preconnect" href="https://images.unsplash.com" />
         <link rel="preconnect" href="https://modelviewer.dev" />
+        <link rel="dns-prefetch" href="https://images.unsplash.com" />
       </head>
       <body className={inter.className}>
         <AuthProvider>

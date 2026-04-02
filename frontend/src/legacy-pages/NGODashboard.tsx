@@ -211,7 +211,12 @@ export const NGODashboard: React.FC = () => {
 
       <div className="relative pt-32 pb-16 bg-walnut text-ivory overflow-hidden">
         <div className="absolute inset-0 opacity-10 pointer-events-none">
-          <img src="https://images.unsplash.com/photo-1589578527966-04d7c15ad48a?w=1600&h=400&fit=crop" alt="Heritage" className="w-full h-full object-cover grayscale" />
+          <img 
+            src="https://images.unsplash.com/photo-1589578527966-04d7c15ad48a?w=1600&h=400&fit=crop" 
+            alt="Heritage" 
+            className="w-full h-full object-cover grayscale" 
+            loading="lazy"
+          />
         </div>
 
         <div className="max-w-7xl mx-auto px-8 relative flex flex-col md:flex-row items-center gap-12">

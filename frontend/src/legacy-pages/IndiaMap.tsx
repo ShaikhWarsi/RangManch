@@ -52,7 +52,6 @@ const IndiaMapWrapper = React.memo(() => {
     });
     
     return () => {
-      // Cleanup on unmount
       setIsClient(false);
       setLeafletLoaded(false);
     };
@@ -209,12 +208,10 @@ const IndiaMap: React.FC = () => {
     };
   };
 
-  const handleStateClick = (state: any, centerCoords: L.LatLngBounds) => {
-    const stateName = state.properties.ST_NM;
+  const handleStateClick = (stateName: string) => {
     setSelectedState(stateName);
     
     const stateNameFormatted = stateName.split(" ").join("").toLowerCase();
-    console.log("Clicked " + stateNameFormatted);
     
     setTimeout(() => {
       if (typeof window !== 'undefined') {
@@ -376,8 +373,12 @@ const IndiaMap: React.FC = () => {
               (layer as L.Path).setStyle(getStateStyle(feature));
 
               layer.on("click", () => {
-                const bounds = (layer as L.FeatureGroup).getBounds();
-                handleStateClick(feature, bounds);
+                const stateFeature = (data as any).features.find((f: any) => f.properties.ST_NM === stateName);
+                if (stateFeature) {
+                  const bounds = L.geoJSON(stateFeature).getBounds();
+                  handleStateClick(stateName);
+                  if (isMobile) setShowMobilePanel(false);
+                }
               });
 
               // Simplified tooltip for mobile

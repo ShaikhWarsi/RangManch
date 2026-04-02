@@ -86,15 +86,7 @@ class ApiService {
         throw new Error('Network error - using mock data');
       }
       
-      console.error('API request failed:', error);
-      
-      // Retry logic for other errors
-      if (retries > 0 && error instanceof Error && !error.message.includes('Network error')) {
-        console.log(`Retrying API request... (${retries} attempts remaining)`);
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        return this.request(endpoint, options, retries - 1);
-      }
-      
+      // Silent fail for expected errors
       throw error;
     }
   }
@@ -104,7 +96,7 @@ class ApiService {
     try {
       return await this.request<Product[]>(`/products?page=${page}&limit=${limit}`);
     } catch (error) {
-      console.error('Failed to fetch products, using mock data');
+      // Using mock data fallback
       return {
         success: true,
         data: mockProducts,
@@ -117,7 +109,7 @@ class ApiService {
     try {
       return await this.request<Product>(`/products/${id}`);
     } catch (error) {
-      console.error('Failed to fetch product, using mock data');
+      // Using mock data fallback
       const product = mockProducts.find(p => p._id === id);
       if (!product) {
         throw new Error('Product not found');
@@ -134,7 +126,7 @@ class ApiService {
     try {
       return await this.request<Product[]>(`/products/artisan/${artisanId}?page=${page}&limit=${limit}`);
     } catch (error) {
-      console.error('Failed to fetch artisan products, using mock data');
+      // Using mock data fallback
       return {
         success: true,
         data: mockProducts.filter(p => p.artisanId === artisanId),
@@ -150,7 +142,7 @@ class ApiService {
         body: JSON.stringify(productData),
       });
     } catch (error) {
-      console.error('Failed to create product');
+      // Failed to create product
       throw error;
     }
   }
@@ -161,7 +153,7 @@ class ApiService {
         method: 'DELETE',
       });
     } catch (error) {
-      console.error('Failed to delete product');
+      // Failed to delete product
       throw error;
     }
   }
@@ -173,7 +165,7 @@ class ApiService {
         body: JSON.stringify(review),
       });
     } catch (error) {
-      console.error('Failed to add product review');
+      // Failed to add product review
       throw error;
     }
   }
@@ -183,7 +175,7 @@ class ApiService {
     try {
       return await this.request<any[]>(`/states?page=${page}&limit=${limit}`);
     } catch (error) {
-      console.error('Failed to fetch artisans, using mock data');
+      // Using mock data fallback
       return {
         success: true,
         data: mockArtisans,
@@ -196,7 +188,7 @@ class ApiService {
     try {
       return await this.request<any>(`/states/${id}`);
     } catch (error) {
-      console.error('Failed to fetch artisan, using mock data');
+      // Using mock data fallback
       const artisan = mockArtisans.find(a => a._id === id);
       if (!artisan) {
         throw new Error('Artisan not found');
@@ -215,7 +207,7 @@ class ApiService {
       const response = await fetch(`${API_BASE_URL}/health`);
       return await response.json();
     } catch (error) {
-      console.error('Health check failed:', error);
+      // Health check failed
       // Return fallback health status
       return {
         status: 'degraded',

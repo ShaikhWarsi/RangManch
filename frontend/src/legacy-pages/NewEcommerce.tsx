@@ -91,7 +91,7 @@ const TradePage: React.FC = () => {
             productsData = productsResponse.data;
           }
         } catch (error) {
-          console.log('Using mock products data - API unavailable');
+          // Using mock products data
         }
 
         try {
@@ -100,7 +100,7 @@ const TradePage: React.FC = () => {
             artisansData = artisansResponse.data;
           }
         } catch (error) {
-          console.log('Using mock artisans data - API unavailable');
+          // Using mock artisans data
         }
 
         // Set data
@@ -110,7 +110,7 @@ const TradePage: React.FC = () => {
         setRevenueCount(840000); // This could be calculated from real orders data
         
       } catch (error) {
-        console.error('Unexpected error in data fetching:', error);
+        // Unexpected error in data fetching
         // Ensure fallback to mock data
         setProducts(mockProducts);
         setArtisans(mockArtisans);

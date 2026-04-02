@@ -75,52 +75,18 @@ const Home: React.FC = () => {
     });
   }, []);
 
-  // GSAP animations
+  // GSAP animations - simplified for better performance
   useEffect(() => {
     const ctx = gsap.context(() => {
       gsap.to("#bg", {
-        scale: 1.5,
         scrollTrigger: {
-          scrub: 1,
+          scrub: 0.5,
         },
       });
-
-      gsap.to("#man", {
-        scale: 0.5,
-        scrollTrigger: {
-          scrub: 1,
-        },
-      });
-
-      gsap.to("#rmynFG", {
-        duration: 10,
-        x: -250,
-        y: -50,
-        scale: 0.7,
-        scrollTrigger: {
-          trigger: "#bird3",
-          scrub: 1,
-        },
-      });
-
-      gsap.to("#cloud1", {
-        x: 750,
-        scrollTrigger: {
-          scrub: 1,
-        },
-      });
-
       gsap.to("#cloud2", {
         x: -750,
         scrollTrigger: {
-          scrub: 1,
-        },
-      });
-
-      gsap.to("#text", {
-        y: 800,
-        scrollTrigger: {
-          scrub: 1,
+          scrub: 0.5,
         },
       });
 

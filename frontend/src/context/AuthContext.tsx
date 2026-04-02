@@ -116,7 +116,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setLoading(false);
         }
       } catch (error) {
-        console.error('Auth initialization failed, falling back to demo mode:', error);
         setIsDemoMode(true);
         setLoading(false);
       }
@@ -148,7 +147,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUserRole(firebaseUser.role || 'buyer');
       }
     } catch (error) {
-      console.error('Signup error:', error);
+      // Signup error
       throw error;
     }
   };
@@ -175,7 +174,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUserRole(firebaseUser.role || 'buyer');
       }
     } catch (error) {
-      console.error('Login error:', error);
+      // Login error
       throw error;
     }
   };
@@ -194,7 +193,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setCurrentUser(null);
       setUserRole(null);
     } catch (error) {
-      console.error('Logout error:', error);
+      // Logout error
       throw error;
     }
   };

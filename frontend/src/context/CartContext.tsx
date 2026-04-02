@@ -64,7 +64,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (savedCart) setCartItems(JSON.parse(savedCart));
       if (savedOrders) setOrders(JSON.parse(savedOrders));
     } catch (error) {
-      console.error('Error loading cart data:', error);
+      // Cart load error
     }
   }, []);
 
@@ -76,7 +76,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('cart', JSON.stringify(cartItems));
       localStorage.setItem('orders', JSON.stringify(orders));
     } catch (error) {
-      console.error('Error saving cart data:', error);
+      // Cart save error
     }
   }, [cartItems, orders]);
 

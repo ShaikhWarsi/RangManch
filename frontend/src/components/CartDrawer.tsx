@@ -82,7 +82,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
       description: "Authentic Cultural Heritage Purchase",
       image: "https://example.com/your_logo",
       handler: function (_response: RazorpayResponse) {
-        console.log("Payment Successful", _response);
+        // Payment processed
         const order = checkout();
         if (order) {
           onClose();

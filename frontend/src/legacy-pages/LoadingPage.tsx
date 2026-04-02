@@ -12,7 +12,7 @@ interface LoadingPageProps {
 
 const LoadingPage: React.FC<LoadingPageProps> = ({ 
   onLoadingComplete, 
-  duration = 800 
+  duration = 300 
 }) => {
   const [fadeOut, setFadeOut] = useState<boolean>(false);
 
@@ -22,7 +22,7 @@ const LoadingPage: React.FC<LoadingPageProps> = ({
       
       setTimeout(() => {
         if (onLoadingComplete) onLoadingComplete();
-      }, 750); // Fade out duration
+      }, 200); // Fade out duration
     }, duration);
 
     return () => clearTimeout(timer);

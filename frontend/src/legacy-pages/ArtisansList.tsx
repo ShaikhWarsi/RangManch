@@ -374,7 +374,8 @@ export const ArtisansList: React.FC = () => {
                 <img
                   src={artisan.image}
                   alt={artisan.name}
-                  className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                  loading="lazy"
+                  className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
                 />
                 <div className="absolute top-6 right-6 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-xl flex items-center gap-2 border border-sand/30 shadow-sm">
                   <Star className="text-gold" size={16} strokeWidth={1} />

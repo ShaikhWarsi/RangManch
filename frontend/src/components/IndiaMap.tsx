@@ -148,6 +148,7 @@ const IndiaMap: React.FC = () => {
   const [hoveredState, setHoveredState] = useState<string | null>(null);
   const [showMobilePanel, setShowMobilePanel] = useState(false);
   const mapRef = useRef<any>(null);
+  const [mapInitialized, setMapInitialized] = useState(false);
   
   // Cultural heritage info for each state
   const stateHeritageInfo: StateHeritageMap = {
@@ -357,19 +358,21 @@ const IndiaMap: React.FC = () => {
 
       {/* Map Container */}
       <div>
-        <MapContainerAny
-          key="india-map-static"
-          center={[22.5, 80]}
-          zoom={isMobile ? 4 : 4.5}
-          style={{ 
-            height: "100vh", 
-            width: "100vw",
-            filter: "brightness(0.95) contrast(1.1)"
-          }}
-          zoomControl={false}
-          scrollWheelZoom={true}
-          attributionControl={false}
-        >
+        {!mapInitialized ? (
+          <MapContainerAny
+            key="india-map-static"
+            center={[22.5, 80]}
+            zoom={isMobile ? 4 : 4.5}
+            style={{ 
+              height: "100vh", 
+              width: "100vw",
+              filter: "brightness(0.95) contrast(1.1)"
+            }}
+            zoomControl={false}
+            scrollWheelZoom={true}
+            attributionControl={false}
+            whenReady={() => setMapInitialized(true)}
+          >
           <TileLayerAny
             url="https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -479,6 +482,19 @@ const IndiaMap: React.FC = () => {
             }}
           />
         </MapContainerAny>
+        ) : (
+          <div style={{ 
+            height: "100vh", 
+            width: "100vw",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "#1a1a1a",
+            color: "white"
+          }}>
+            Map Loaded
+          </div>
+        )}
       </div>
 
       {/* Mobile Toggle Button */}

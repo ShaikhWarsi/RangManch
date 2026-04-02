@@ -357,7 +357,19 @@ const IndiaMap: React.FC = () => {
 
       {/* Map Container */}
       <div>
-        <MemoizedMap>
+        <MapContainerAny
+          key="india-map-static"
+          center={[22.5, 80]}
+          zoom={isMobile ? 4 : 4.5}
+          style={{ 
+            height: "100vh", 
+            width: "100vw",
+            filter: "brightness(0.95) contrast(1.1)"
+          }}
+          zoomControl={false}
+          scrollWheelZoom={true}
+          attributionControl={false}
+        >
           <TileLayerAny
             url="https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -466,7 +478,7 @@ const IndiaMap: React.FC = () => {
               });
             }}
           />
-        </MemoizedMap>
+        </MapContainerAny>
       </div>
 
       {/* Mobile Toggle Button */}

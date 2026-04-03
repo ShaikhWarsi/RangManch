@@ -1,6 +1,7 @@
 import './globals.css'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+import Script from 'next/script'
 import { AuthProvider } from '@/context/AuthContext'
 import { CartProvider } from '@/context/CartContext'
 import RoleSwitcher from '@/components/RoleSwitcher'
@@ -37,6 +38,11 @@ export default function RootLayout({
             <AICraftRecommender />
           </CartProvider>
         </AuthProvider>
+        <Script
+          id="razorpay-checkout"
+          src="https://checkout.razorpay.com/v1/checkout.js"
+          strategy="lazyOnload"
+        />
       </body>
     </html>
   )

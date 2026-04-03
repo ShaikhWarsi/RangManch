@@ -142,6 +142,42 @@ router.post("/", async (req: any, res: any) => {
   }
 });
 
+router.post("/cod", async (req: any, res: any) => {
+  try {
+    const { order_id, amount, currency, customer_name, customer_email, customer_contact, products, payment_method } = req.body;
+
+    if (!amount || !customer_name) {
+      return res.status(400).json({ success: false, error: "Amount and customer name are required" });
+    }
+
+    const { data, error } = await supabase.from('orders').insert([
+      {
+        order_id: order_id || `cod_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+        amount,
+        currency: currency || 'INR',
+        customer_name,
+        customer_email: customer_email || null,
+        customer_contact: customer_contact || null,
+        products: products || [],
+        status: 'cod_pending',
+        payment_method: payment_method || 'cod',
+        payment_verified: false
+      }
+    ]).select();
+
+    if (error) throw error;
+
+    res.status(201).json({
+      success: true,
+      order: data[0],
+      message: "COD order placed successfully"
+    });
+  } catch (error: any) {
+    console.error('Create COD order error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 router.patch("/:orderId", async (req: any, res: any) => {
   try {
     const { orderId } = req.params;

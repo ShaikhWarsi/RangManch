@@ -11,6 +11,8 @@ export const ArtisanDashboard: React.FC = () => {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [artisanHover, setArtisanHover] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<'products' | 'orders'>('products');
   
   // Form state
   const [productForm, setProductForm] = useState<Product>({
@@ -125,6 +127,7 @@ export const ArtisanDashboard: React.FC = () => {
     const fetchProducts = async () => {
       try {
         const response = await fetch("http://localhost:3001/api/products");
+        if (!response.ok) throw new Error("Backend not available");
         const data = await response.json();
         if (data && data.length > 0) {
           setArtisanProducts(data);
@@ -132,12 +135,42 @@ export const ArtisanDashboard: React.FC = () => {
           setArtisanProducts(defaultProducts);
         }
       } catch (error) {
-        console.error("Error fetching products:", error);
-        setArtisanProducts(defaultProducts);
+        console.warn("Backend not available, using default products");
+        // Try to load from localStorage as a secondary fallback
+        const savedProducts = localStorage.getItem('artisanProducts');
+        if (savedProducts) {
+          setArtisanProducts(JSON.parse(savedProducts));
+        } else {
+          setArtisanProducts(defaultProducts);
+        }
       }
     };
     fetchProducts();
   }, []);
+
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://yamxxx1-artisan.hf.space/api';
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const response = await fetch(`${API_BASE}/orders`);
+        if (response.ok) {
+          const data = await response.json();
+          setOrders(data.orders || []);
+        }
+      } catch (error) {
+        console.warn("Could not fetch orders from backend");
+      }
+    };
+    if (activeTab === 'orders') {
+      fetchOrders();
+    }
+  }, [activeTab]);
+
+  // Save to localStorage whenever products change
+  useEffect(() => {
+    localStorage.setItem('artisanProducts', JSON.stringify(artisanProducts));
+  }, [artisanProducts]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -716,27 +749,57 @@ export const ArtisanDashboard: React.FC = () => {
           alignItems: "center",
           marginBottom: "30px"
         }}>
-          <h2 style={{
-            fontSize: "2rem",
-            color: colors.purple,
-            fontFamily: "'Noto Serif', serif"
-          }}>
-            Your Products ({artisanProducts.length})
-          </h2>
-          <div style={{
-            display: "flex",
-            gap: "10px",
-            color: colors.teal
-          }}>
-            <span>💰 Total Value: {
-              formatPrice(artisanProducts.reduce((sum, p) => {
-                const priceValue = typeof p.price === 'string' ? parseFloat(p.price.replace(/,/g, '')) : p.price;
-                return sum + (priceValue * (p.quantity || 1));
-              }, 0))
-            }</span>
+          <div style={{ display: "flex", gap: "20px" }}>
+            <button
+              onClick={() => setActiveTab('products')}
+              style={{
+                padding: "15px 30px",
+                background: activeTab === 'products' ? colors.maroon : 'transparent',
+                border: `2px solid ${colors.maroon}`,
+                borderRadius: "50px",
+                color: activeTab === 'products' ? 'white' : colors.maroon,
+                fontSize: "1rem",
+                fontWeight: "600",
+                cursor: "pointer",
+                transition: "all 0.3s ease"
+              }}
+            >
+              📦 Products ({artisanProducts.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('orders')}
+              style={{
+                padding: "15px 30px",
+                background: activeTab === 'orders' ? colors.green : 'transparent',
+                border: `2px solid ${colors.green}`,
+                borderRadius: "50px",
+                color: activeTab === 'orders' ? 'white' : colors.green,
+                fontSize: "1rem",
+                fontWeight: "600",
+                cursor: "pointer",
+                transition: "all 0.3s ease"
+              }}
+            >
+              🛒 Orders ({orders.length})
+            </button>
           </div>
+          {activeTab === 'products' && (
+            <div style={{
+              display: "flex",
+              gap: "10px",
+              color: colors.teal
+            }}>
+              <span>💰 Total Value: {
+                formatPrice(artisanProducts.reduce((sum, p) => {
+                  const priceValue = typeof p.price === 'string' ? parseFloat(p.price.replace(/,/g, '')) : p.price;
+                  return sum + (priceValue * (p.quantity || 1));
+                }, 0))
+              }</span>
+            </div>
+          )}
         </div>
 
+        {activeTab === 'products' ? (
         <div style={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))",
@@ -919,6 +982,177 @@ export const ArtisanDashboard: React.FC = () => {
             <p style={{ color: colors.teal }}>
               Click the "Add New Product" button to start listing your creations.
             </p>
+          </div>
+        )}
+        ) : (
+          <div>
+            {orders.length === 0 ? (
+              <div style={{
+                textAlign: "center",
+                padding: "80px",
+                background: "rgba(255,255,255,0.5)",
+                borderRadius: "20px",
+                border: `2px dashed ${colors.gold}`
+              }}>
+                <div style={{ fontSize: "4rem", marginBottom: "20px" }}>📦</div>
+                <h3 style={{ fontSize: "1.5rem", color: colors.maroon, marginBottom: "10px" }}>
+                  No Orders Yet
+                </h3>
+                <p style={{ color: colors.teal }}>
+                  Orders from customers will appear here when they place them.
+                </p>
+              </div>
+            ) : (
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(400px, 1fr))",
+                gap: "20px"
+              }}>
+                {orders.map((order: any) => (
+                  <div
+                    key={order.id || order.order_id}
+                    style={{
+                      background: "white",
+                      borderRadius: "15px",
+                      padding: "25px",
+                      boxShadow: "0 5px 20px rgba(0,0,0,0.1)",
+                      border: `2px solid ${colors.gold}40`,
+                      transition: "all 0.3s ease"
+                    }}
+                  >
+                    <div style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginBottom: "15px"
+                    }}>
+                      <div>
+                        <span style={{
+                          fontSize: "0.8rem",
+                          color: colors.teal,
+                          fontWeight: "600"
+                        }}>Order ID</span>
+                        <div style={{
+                          fontFamily: "monospace",
+                          fontSize: "0.9rem",
+                          color: colors.maroon
+                        }}>#{order.order_id?.slice(-8).toUpperCase() || order.id?.slice(-8).toUpperCase()}</div>
+                      </div>
+                      <div style={{
+                        padding: "8px 15px",
+                        borderRadius: "20px",
+                        background: order.status === 'cod_pending' ? colors.gold + '30' : colors.green + '30',
+                        color: order.status === 'cod_pending' ? colors.maroon : colors.green,
+                        fontSize: "0.85rem",
+                        fontWeight: "600"
+                      }}>
+                        {order.status === 'cod_pending' ? '💵 COD - Pending' : order.status}
+                      </div>
+                    </div>
+
+                    <div style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
+                      gap: "15px",
+                      marginBottom: "15px"
+                    }}>
+                      <div>
+                        <span style={{ fontSize: "0.75rem", color: colors.teal, textTransform: "uppercase" }}>Customer</span>
+                        <div style={{ fontSize: "1rem", fontWeight: "600", color: colors.walnut }}>
+                          {order.customer_name || 'N/A'}
+                        </div>
+                      </div>
+                      <div>
+                        <span style={{ fontSize: "0.75rem", color: colors.teal, textTransform: "uppercase" }}>Contact</span>
+                        <div style={{ fontSize: "1rem", color: colors.walnut }}>
+                          {order.customer_contact || order.customer_email || 'N/A'}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={{
+                      background: colors.ivory,
+                      padding: "15px",
+                      borderRadius: "10px",
+                      marginBottom: "15px"
+                    }}>
+                      <span style={{ fontSize: "0.75rem", color: colors.teal, textTransform: "uppercase" }}>Products</span>
+                      <div style={{ marginTop: "8px" }}>
+                        {order.products && Array.isArray(order.products) ? (
+                          order.products.slice(0, 3).map((product: any, idx: number) => (
+                            <div key={idx} style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              fontSize: "0.9rem",
+                              marginBottom: "5px"
+                            }}>
+                              <span style={{ color: colors.walnut }}>
+                                {product.name || product.title || 'Product'} x{product.quantity || 1}
+                              </span>
+                              <span style={{ color: colors.green, fontWeight: "600" }}>
+                                ₹{typeof product.price === 'number' ? product.price.toLocaleString('en-IN') : product.price}
+                              </span>
+                            </div>
+                          ))
+                        ) : (
+                          <div style={{ color: colors.walnut, fontSize: "0.9rem" }}>
+                            {typeof order.products === 'string' ? order.products : 'Products data unavailable'}
+                          </div>
+                        )}
+                        {order.products && Array.isArray(order.products) && order.products.length > 3 && (
+                          <div style={{ fontSize: "0.8rem", color: colors.teal, marginTop: "5px" }}>
+                            +{order.products.length - 3} more items
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      paddingTop: "15px",
+                      borderTop: `1px solid ${colors.gold}30`
+                    }}>
+                      <div>
+                        <span style={{ fontSize: "0.75rem", color: colors.teal, textTransform: "uppercase" }}>Total Amount</span>
+                        <div style={{
+                          fontSize: "1.5rem",
+                          fontWeight: "700",
+                          color: colors.green
+                        }}>
+                          ₹{typeof order.amount === 'number' ? order.amount.toLocaleString('en-IN') : order.amount}
+                        </div>
+                      </div>
+                      <div style={{
+                        padding: "8px 15px",
+                        borderRadius: "20px",
+                        background: order.payment_method === 'cod' ? colors.gold + '20' : colors.blue + '20',
+                        fontSize: "0.8rem"
+                      }}>
+                        Payment: {order.payment_method?.toUpperCase() || 'N/A'}
+                      </div>
+                    </div>
+
+                    {order.created_at && (
+                      <div style={{
+                        marginTop: "10px",
+                        fontSize: "0.8rem",
+                        color: colors.teal
+                      }}>
+                        📅 {new Date(order.created_at).toLocaleDateString('en-IN', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>

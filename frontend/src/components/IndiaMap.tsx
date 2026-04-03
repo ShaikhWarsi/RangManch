@@ -85,7 +85,6 @@ const getL = async () => {
 const IndiaMapWrapper = React.memo(() => {
   const [isClient, setIsClient] = useState(false);
   const [leafletLoaded, setLeafletLoaded] = useState(false);
-  const [containerKey, setContainerKey] = useState(0);
 
   useEffect(() => {
     setIsClient(true);
@@ -98,12 +97,6 @@ const IndiaMapWrapper = React.memo(() => {
       setLeafletLoaded(false);
     };
   }, []);
-
-  // Force complete remount when window size changes
-  const { isMobile } = useResponsive();
-  useEffect(() => {
-    setContainerKey(prev => prev + 1);
-  }, [isMobile]);
 
   if (!isClient || !leafletLoaded) {
     return (
@@ -120,7 +113,7 @@ const IndiaMapWrapper = React.memo(() => {
     );
   }
 
-  return <IndiaMap key={containerKey} />;
+  return <IndiaMap />;
 });
 
 const MapContainerAny = MapContainer as any;
@@ -135,12 +128,6 @@ const IndiaMap: React.FC = () => {
   const [hoveredState, setHoveredState] = useState<string | null>(null);
   const [showMobilePanel, setShowMobilePanel] = useState(false);
   const mapRef = useRef<any>(null);
-  const [mapKey, setMapKey] = useState(0);
-  
-  // Force map re-initialization when mobile state changes
-  useEffect(() => {
-    setMapKey(prev => prev + 1);
-  }, [isMobile]);
   
   // Cultural heritage info for each state
   const stateHeritageInfo: StateHeritageMap = {
@@ -349,9 +336,8 @@ const IndiaMap: React.FC = () => {
       </div>
 
       {/* Map Container */}
-      <div key={`map-wrapper-${isMobile ? 'mobile' : 'desktop'}`}>
+      <div>
         <MapContainerAny
-          key={mapKey}
           center={[22.5, 80]}
           zoom={isMobile ? 4 : 4.5}
           style={{ 

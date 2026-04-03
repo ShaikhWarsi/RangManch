@@ -31,20 +31,20 @@ export const EcommerceCard = ({
   return (
     <div className="group cursor-pointer flex flex-col gap-4">
       {/* Image Container */}
-      <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-sand/20 shadow-premium transition-all duration-500 group-hover:shadow-premium-hover">
+      <div className="relative aspect-[3/4] overflow-hidden rounded-md bg-sand/20 shadow-premium transition-all duration-500 group-hover:shadow-premium-hover">
         <img
           src={ImgSrc}
           alt={title}
           className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
         />
         {/* Master Weaver Badge */}
-        <div className="absolute top-3 left-3 bg-maroon/90 text-ivory text-xs px-2 py-1 rounded">
+        <div className="absolute top-3 left-3 bg-maroon/90 text-ivory text-xs px-2 py-1 rounded-sm">
           Master Weaver
         </div>
         {/* Heart Icon on Hover */}
         <button
           onClick={() => id && onToggleFavorite?.(id)}
-          className="absolute top-3 right-3 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:scale-110"
+          className="absolute top-3 right-3 w-8 h-8 bg-white/90 rounded-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:scale-110"
         >
           <span className={`${isFavorite ? 'text-red-500' : 'text-maroon'} text-sm`}>
             {isFavorite ? '♥' : '♡'}
@@ -81,19 +81,19 @@ export const EcommerceCard = ({
         <div className="flex gap-2 mt-2">
           <button
             onClick={() => id && onAddToCart?.({ id, name: title, price, image: ImgSrc, artisan })}
-            className="flex-1 bg-maroon text-ivory py-2 px-3 rounded-lg text-xs font-ui uppercase tracking-wide hover:bg-maroon/90 transition-colors"
+            className="flex-1 bg-maroon text-ivory py-2 px-3 rounded-sm text-xs font-ui uppercase tracking-wide hover:bg-maroon/90 transition-colors"
           >
             Add to Cart
           </button>
           <button
             onClick={() => id && onBuyNow?.({ id, name: title, price, image: ImgSrc, artisan })}
-            className="flex-1 bg-gold text-walnut py-2 px-3 rounded-lg text-xs font-ui uppercase tracking-wide hover:bg-gold/90 transition-colors"
+            className="flex-1 bg-gold text-walnut py-2 px-3 rounded-sm text-xs font-ui uppercase tracking-wide hover:bg-gold/90 transition-colors"
           >
             Buy Now
           </button>
           <button
             onClick={() => id && onWhatsApp?.({ id, name: title, price, image: ImgSrc, artisan })}
-            className="bg-green-500 text-white p-2 rounded-lg hover:bg-green-600 transition-colors"
+            className="bg-green-500 text-white p-2 rounded-sm hover:bg-green-600 transition-colors"
             title="Chat on WhatsApp"
           >
             <MessageCircle size={14} />

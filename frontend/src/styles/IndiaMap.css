@@ -42,10 +42,8 @@ IndiaMap.css
   border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
-/* Map tile styling */
-.leaflet-tile {
-  filter: hue-rotate(15deg) saturate(1.1) !important;
-}
+/* Map tile styling - removed color filter to preserve official map colors */
+/* .leaflet-tile filter removed to prevent color distortion of official government map data */
 
 /* Animation for state clicks */
 @keyframes pulse {

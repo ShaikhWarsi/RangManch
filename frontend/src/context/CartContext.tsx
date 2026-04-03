@@ -153,18 +153,33 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const updatedOrders = [...orders, newOrder];
         setOrders(updatedOrders);
         localStorage.setItem('orders', JSON.stringify(updatedOrders));
-        
-        // Also try to sync with backend
+
+        // Sync with backend
+        const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://yamxxx1-artisan.hf.space/api';
         try {
-          await fetch('/api/orders', {
+          await fetch(`${API_BASE}/orders/cod`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(newOrder)
+            body: JSON.stringify({
+              order_id: newOrder.id,
+              amount: total,
+              currency: 'INR',
+              customer_name: newOrder.customer?.name,
+              customer_email: newOrder.customer?.email,
+              customer_contact: newOrder.customer?.contact,
+              products: cartItems.map(item => ({
+                id: item.id,
+                name: item.name || item.title,
+                quantity: item.quantity || 1,
+                price: item.price
+              })),
+              payment_method: 'cod'
+            })
           });
         } catch (e) {
           console.log('Backend sync failed, order saved locally');
         }
-        
+
         // Clear cart after successful order
         setCartItems([]);
         localStorage.setItem('cart', JSON.stringify([]));
@@ -173,14 +188,16 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       // For Razorpay, create order in backend first
-      const response = await fetch('/api/create-order', {
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://yamxxx1-artisan.hf.space/api';
+      const response = await fetch(`${API_BASE}/orders/create-payment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           amount: total,
           currency: 'INR',
           receipt: newOrder.id,
-          customer: newOrder.customer,
+          customer_name: newOrder.customer?.name,
+          customer_email: newOrder.customer?.email,
           products: cartItems.map(item => ({
             id: item.id,
             name: item.name,
@@ -191,10 +208,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       if (response.ok) {
-        const razorpayOrder = await response.json();
+        const data = await response.json();
+        const razorpayOrder = data.order;
+        const keyId = data.keyId;
         
         // Store order locally
-        const updatedOrders = [...orders, { ...newOrder, razorpayOrderId: razorpayOrder.orderId }];
+        const updatedOrders = [...orders, { ...newOrder, razorpayOrderId: razorpayOrder.id }];
         setOrders(updatedOrders);
         localStorage.setItem('orders', JSON.stringify(updatedOrders));
         
@@ -203,7 +222,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem('cart', JSON.stringify([]));
         
         console.log('Razorpay Order created:', razorpayOrder);
-        return { ...newOrder, razorpayOrderId: razorpayOrder.orderId };
+        return { ...newOrder, razorpayOrderId: razorpayOrder.id, razorpayKeyId: keyId } as any;
       } else {
         throw new Error('Failed to create Razorpay order');
       }

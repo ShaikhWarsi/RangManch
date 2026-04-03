@@ -5,7 +5,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from 'next/navigation';
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { ChevronRight, Quote, Shield, Award, Heart, Star } from "lucide-react";
+import { ChevronRight, Quote, Shield, Award, Heart, Star, Search, Package, Users, CheckCircle } from "lucide-react";
 
 const clouds_1 = "/HomePage/clouds_1.png";
 const clouds_2 = "/HomePage/clouds_2.png";
@@ -28,6 +28,10 @@ const Home: React.FC = () => {
   const [loadingProgress, setLoadingProgress] = useState<number>(0);
   const loadingRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLHeadingElement>(null);
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const maxTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const visibilityTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isTabHiddenRef = useRef<boolean>(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -62,17 +66,71 @@ const Home: React.FC = () => {
       ease: "power2.in"
     }, "+=0.5");
 
-    const progressInterval = setInterval(() => {
-      setLoadingProgress(prev => Math.min(prev + Math.random() * 15, 95));
-    }, 150);
+    // Consolidated progress function
+    const startProgress = () => {
+      progressIntervalRef.current = setInterval(() => {
+        setLoadingProgress(prev => Math.min(prev + Math.random() * 15, 95));
+      }, 150);
+    };
 
-    setTimeout(() => {
-      clearInterval(progressInterval);
+    // Complete loading function
+    const completeLoading = () => {
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
       setLoadingProgress(100);
+      setTimeout(() => {
+        setShowLoading(false);
+        document.body.style.overflow = 'auto';
+      }, 500);
+    };
+
+    // Start progress
+    startProgress();
+
+    // Single timeout for completion (2.2s)
+    const completionTimeout = setTimeout(() => {
+      completeLoading();
     }, 2200);
+
+    // Maximum timeout to prevent hanging
+    maxTimeoutRef.current = setTimeout(() => {
+      completeLoading();
+    }, 10000);
+
+    // Visibility change listener using refs
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        isTabHiddenRef.current = true;
+        if (progressIntervalRef.current) {
+          clearInterval(progressIntervalRef.current);
+          progressIntervalRef.current = null;
+        }
+      } else {
+        isTabHiddenRef.current = false;
+        // Resume progress if still loading and not completed
+        if (showLoading && loadingProgress < 95 && !progressIntervalRef.current) {
+          startProgress();
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
       tl.kill();
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+      }
+      if (maxTimeoutRef.current) {
+        clearTimeout(maxTimeoutRef.current);
+      }
+      if (visibilityTimeoutRef.current) {
+        clearTimeout(visibilityTimeoutRef.current);
+      }
+      clearTimeout(completionTimeout);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 
@@ -171,19 +229,7 @@ const Home: React.FC = () => {
           }
         );
 
-        gsap.fromTo(".testimonial-card", 
-          { opacity: 0, x: -40 },
-          { 
-            opacity: 1, 
-            x: 0, 
-            stagger: 0.2,
-            duration: 0.8,
-            scrollTrigger: {
-              trigger: "#testimonials",
-              start: "top 70%",
-            }
-          }
-        );
+        
 
         gsap.fromTo(".feature-item", 
           { opacity: 0, y: 30 },
@@ -237,6 +283,20 @@ const Home: React.FC = () => {
             scrollTrigger: {
               trigger: "#journey",
               start: "top 75%",
+            }
+          }
+        );
+
+        gsap.fromTo(".how-it-works-step", 
+          { opacity: 0, y: 30 },
+          { 
+            opacity: 1, 
+            y: 0, 
+            stagger: 0.15,
+            duration: 0.6,
+            scrollTrigger: {
+              trigger: ".how-it-works-step",
+              start: "top 85%",
             }
           }
         );
@@ -385,25 +445,8 @@ const Home: React.FC = () => {
       <div style={{ opacity: showLoading ? 0 : 1, transition: 'opacity 0.8s ease' }}>
         <IndianNavbarFixed />
 
-        {/* Trust Strip */}
-        <div className="bg-[#6B1F2B] py-3 px-4">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex items-center justify-center gap-6 md:gap-12 flex-wrap">
-              {trustItems.map((item, index) => (
-                <div key={index} className="flex items-center gap-2 text-[#F5EFE6]">
-                  <item.icon size={16} className="text-[#C6A75E]" />
-                  <span className="text-xs font-ui tracking-[0.15em] uppercase">{item.text}</span>
-                  {index < trustItems.length - 1 && (
-                    <span className="w-1 h-1 rounded-full bg-[#C6A75E] ml-4 opacity-50" />
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
         {/* Hero Section */}
-        <section className="section" id="top-section">
+        <section className="section relative" id="top-section">
           <img src={bg} id="bg" alt="bg" />
           
           <div id="hero-particles" className="absolute inset-0 overflow-hidden pointer-events-none z-10">
@@ -421,9 +464,17 @@ const Home: React.FC = () => {
             ))}
           </div>
           
+          <div 
+            className="absolute inset-0 z-5 pointer-events-none"
+            style={{
+              background: 'radial-gradient(ellipse at 50% 30%, rgba(198, 167, 94, 0.15) 0%, transparent 50%)',
+              animation: 'pulse-glow 4s ease-in-out infinite'
+            }}
+          />
+          
           <div style={{
             position: "absolute",
-            top: "17%",
+            top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
             zIndex: 20,
@@ -464,6 +515,13 @@ const Home: React.FC = () => {
           <img src={fg} alt="man2" id="man" />
           <img src={clouds_1} style={{ position: "absolute" }} alt="cloud1" id="cloud1" />
           <img src={clouds_2} style={{ position: "absolute" }} alt="cloud2" id="cloud2" />
+          
+          <style jsx>{`
+            @keyframes pulse-glow {
+              0%, 100% { opacity: 0.5; }
+              50% { opacity: 1; }
+            }
+          `}</style>
         </section>
 
         {/* Parallax Ramayan Section */}
@@ -516,7 +574,7 @@ const Home: React.FC = () => {
               color: "rgba(245, 239, 230, 0.9)",
               marginBottom: "25px"
             }}>
-              Our mission is to empower over 7 million rural artisans by bridging the gap between traditional craft and the global digital economy.
+              Empowering rural artisans across India by bridging the gap between traditional craft and the global digital economy.
             </p>
             <button 
               onClick={() => router.push("/trade")}
@@ -536,7 +594,7 @@ const Home: React.FC = () => {
               Our Mission
             </span>
             <h2 className="font-heading text-[#3E2F26] text-3xl md:text-5xl leading-tight mb-8">
-              Empowering <span className="text-[#6B1F2B] italic">7 million</span> rural artisans by bridging the gap between traditional craft and the global digital economy.
+              Preserving <span className="text-[#6B1F2B] italic">living heritage</span> by connecting master artisans with those who value authentic craftsmanship.
             </h2>
             <div className="w-16 h-[2px] bg-[#C6A75E] mx-auto mb-8" />
             <p className="text-[#3E2F26]/70 font-body text-lg leading-relaxed max-w-2xl mx-auto">
@@ -544,6 +602,57 @@ const Home: React.FC = () => {
             </p>
           </div>
         </section>
+
+        {/* How It Works - Quick Value Prop */}
+        <section className="py-24 px-6 bg-[#F5EFE6] border-t border-[#C6A75E]/10">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-16">
+              <span className="text-[#6B1F2B] text-xs tracking-[0.4em] uppercase font-ui block mb-4">
+                Our Process
+              </span>
+              <h2 className="text-[#3E2F26] text-3xl md:text-4xl font-heading" style={{ fontFamily: "'Cormorant Garamond', serif" }}>How It Works</h2>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-12">
+              <div className="how-it-works-step flex flex-col items-center text-center group cursor-pointer">
+                <div className="w-20 h-20 rounded-full bg-[#6B1F2B]/5 flex items-center justify-center mb-6 group-hover:bg-[#6B1F2B] transition-all duration-500 group-hover:scale-110 shadow-sm">
+                  <Search className="w-8 h-8 text-[#6B1F2B] group-hover:text-[#C6A75E] transition-colors duration-500" />
+                </div>
+                <h4 className="text-[#3E2F26] font-heading text-xl mb-3" style={{ fontFamily: "'Cormorant Garamond', serif" }}>Discover</h4>
+                <p className="text-[#3E2F26]/60 text-sm leading-relaxed">Explore curated collections from master artisans across India</p>
+              </div>
+              <div className="how-it-works-step flex flex-col items-center text-center group cursor-pointer">
+                <div className="w-20 h-20 rounded-full bg-[#6B1F2B]/5 flex items-center justify-center mb-6 group-hover:bg-[#6B1F2B] transition-all duration-500 group-hover:scale-110 shadow-sm">
+                  <Package className="w-8 h-8 text-[#6B1F2B] group-hover:text-[#C6A75E] transition-colors duration-500" />
+                </div>
+                <h4 className="text-[#3E2F26] font-heading text-xl mb-3" style={{ fontFamily: "'Cormorant Garamond', serif" }}>Verify</h4>
+                <p className="text-[#3E2F26]/60 text-sm leading-relaxed">Each piece comes with artisan verification and craft story</p>
+              </div>
+              <div className="how-it-works-step flex flex-col items-center text-center group cursor-pointer">
+                <div className="w-20 h-20 rounded-full bg-[#6B1F2B]/5 flex items-center justify-center mb-6 group-hover:bg-[#6B1F2B] transition-all duration-500 group-hover:scale-110 shadow-sm">
+                  <Users className="w-8 h-8 text-[#6B1F2B] group-hover:text-[#C6A75E] transition-colors duration-500" />
+                </div>
+                <h4 className="text-[#3E2F26] font-heading text-xl mb-3" style={{ fontFamily: "'Cormorant Garamond', serif" }}>Support</h4>
+                <p className="text-[#3E2F26]/60 text-sm leading-relaxed">Your purchase directly supports artisan families and communities</p>
+              </div>
+              <div className="how-it-works-step flex flex-col items-center text-center group cursor-pointer">
+                <div className="w-20 h-20 rounded-full bg-[#6B1F2B]/5 flex items-center justify-center mb-6 group-hover:bg-[#6B1F2B] transition-all duration-500 group-hover:scale-110 shadow-sm">
+                  <CheckCircle className="w-8 h-8 text-[#6B1F2B] group-hover:text-[#C6A75E] transition-colors duration-500" />
+                </div>
+                <h4 className="text-[#3E2F26] font-heading text-xl mb-3" style={{ fontFamily: "'Cormorant Garamond', serif" }}>Own</h4>
+                <p className="text-[#3E2F26]/60 text-sm leading-relaxed">Receive a piece of living heritage delivered to your door</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Decorative Divider */}
+        <div className="h-24 bg-[#F5EFE6] flex items-center justify-center">
+          <div className="flex items-center gap-6">
+            <div className="w-24 h-[1px] bg-gradient-to-r from-transparent to-[#C6A75E]/30" />
+            <span className="text-[#C6A75E]/60 text-xl">❋</span>
+            <div className="w-24 h-[1px] bg-gradient-to-l from-transparent to-[#C6A75E]/30" />
+          </div>
+        </div>
 
         {/* Stats Section */}
         <section id="brand-story" className="py-24 px-6 bg-[#6B1F2B]">
@@ -568,6 +677,15 @@ const Home: React.FC = () => {
             </div>
           </div>
         </section>
+
+        {/* Decorative Divider */}
+        <div className="h-20 bg-[#6B1F2B] flex items-center justify-center -mt-1">
+          <div className="flex items-center gap-6">
+            <div className="w-32 h-[1px] bg-gradient-to-r from-transparent via-[#C6A75E]/50 to-transparent" />
+            <div className="w-3 h-3 rotate-45 border border-[#C6A75E]/50" />
+            <div className="w-32 h-[1px] bg-gradient-to-r from-transparent via-[#C6A75E]/50 to-transparent" />
+          </div>
+        </div>
 
         {/* Brand Story Section */}
         <section className="py-32 px-6 bg-[#F5EFE6]">
@@ -776,6 +894,10 @@ const Home: React.FC = () => {
                     </div>
                   </div>
                   <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#C6A75E] to-transparent opacity-0 group-hover:opacity-100 transition-all duration-700 z-20" />
+                  
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 z-15 pointer-events-none">
+                    <div className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-[#C6A75E]/20 to-transparent skew-x-[-20deg] group-hover:translate-x-[200%] transition-transform duration-1000" />
+                  </div>
                 </div>
               ))}
             </div>
@@ -921,6 +1043,38 @@ const Home: React.FC = () => {
           </div>
         </section>
 
+        {/* Featured Artisan Voice */}
+        <section className="py-24 px-6 bg-[#3E2F26] relative overflow-hidden">
+          <div 
+            className="absolute inset-0 opacity-5"
+            style={{
+              backgroundImage: `url("/IMAGES/seamless-traditional-indian-textile-floral-border-pattern-motif-vector-carpet-abstract-geometric-fa_715993-40.avif")`,
+              backgroundSize: '150px'
+            }}
+          />
+          <div className="max-w-4xl mx-auto relative">
+            <div className="text-center">
+              <span className="text-[#C6A75E] text-xs tracking-[0.4em] uppercase font-ui block mb-8">
+                Featured Voice
+              </span>
+              <Quote className="w-12 h-12 text-[#C6A75E]/30 mx-auto mb-8" />
+              <blockquote className="text-[#F5EFE6] text-2xl md:text-3xl leading-relaxed mb-8 italic" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+                "My fingers know the loom better than my own hands. My father taught me, his father taught him—for seven generations, this is all we know."
+              </blockquote>
+              <div className="flex items-center justify-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-[#6B1F2B] flex items-center justify-center">
+                  <span className="text-[#C6A75E] text-lg font-heading" style={{ fontFamily: "'Cormorant Garamond', serif" }}>M</span>
+                </div>
+                <div className="text-left">
+                  <p className="text-[#F5EFE6] font-ui text-sm font-semibold">Maqbool Ahmed</p>
+                  <p className="text-[#F5EFE6]/50 text-xs">Master Weaver, Banarasi Silk • Varanasi</p>
+                </div>
+              </div>
+              <p className="text-[#C6A75E] text-xs mt-6 tracking-[0.2em]">40+ YEARS OF MASTERY</p>
+            </div>
+          </div>
+        </section>
+
         {/* Heritage Parallax Section */}
         <section className="relative h-[100vh] overflow-hidden">
           <img 
@@ -977,6 +1131,15 @@ const Home: React.FC = () => {
             </div>
           </div>
         </section>
+
+        {/* Decorative Divider */}
+        <div className="h-16 bg-[#3E2F26] flex items-center justify-center">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-[1px] bg-gradient-to-r from-transparent to-[#C6A75E]/30" />
+            <span className="text-[#C6A75E]/40 text-sm">✦</span>
+            <div className="w-16 h-[1px] bg-gradient-to-l from-transparent to-[#C6A75E]/30" />
+          </div>
+        </div>
 
         {/* Features Section */}
         <section id="features" className="py-32 px-6 bg-[#F5EFE6]">

@@ -8,9 +8,17 @@
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
 }
 
-/* Optimized transitions - only animate transform and opacity */
-.state-page * {
+/* Optimized transitions - only animate specific elements that need it */
+.state-page .animate-on-scroll {
   transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.state-page .interactive-element {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.state-page .fade-in {
+  transition: opacity 0.3s ease;
 }
 
 /* Responsive Design */

@@ -1,14 +1,11 @@
 'use client'
 
-import React from "react";
-import { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import "../styles/ActionCard.css";
+import { gsap } from "gsap";
 
 import Atropos from "atropos/react";
 import "atropos/css";
-
-import AOS from "aos";
-import "aos/dist/aos.css";
 
 interface ParallaxCardProps {
   images: string;
@@ -33,18 +30,32 @@ const ParallaxCard = ({
   heightSize,
   widthSize,
 }: ParallaxCardProps) => {
+  const cardRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    AOS.init();
-  }, []);
+    if (cardRef.current) {
+      gsap.fromTo(cardRef.current, 
+        { opacity: 0, y: 30 },
+        { 
+          opacity: 1, 
+          y: 0, 
+          duration: 0.8,
+          delay: delay * 0.05,
+          ease: "power2.out"
+        }
+      );
+    }
+  }, [delay]);
+
   return (
     <div
+      ref={cardRef}
       style={{
         height: "100%",
         width: "100%",
-        position: "relative"
+        position: "relative",
+        cursor: "pointer"
       }}
-      data-aos="fade-up"
-      data-aos-delay={50 * delay}
       onClick={() => {
       if (typeof window !== 'undefined') {
         window.location.href = url;

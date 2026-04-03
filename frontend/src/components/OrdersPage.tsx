@@ -128,12 +128,21 @@ export const OrdersPage: React.FC = () => {
                   </div>
 
                   <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2 px-4 py-2 bg-teal/5 text-teal rounded-full border border-teal/10">
-                      <CheckCircle size={14} />
-                      <span className="text-[10px] font-ui font-bold uppercase tracking-widest">
-                        {order.status}
-                      </span>
-                    </div>
+                    {order.paymentMethod === 'cod' ? (
+                      <div className="flex items-center gap-2 px-4 py-2 bg-gold/10 text-maroon rounded-full border border-gold/20">
+                        <span style={{ fontSize: '14px' }}>💵</span>
+                        <span className="text-[10px] font-ui font-bold uppercase tracking-widest">
+                          Cash on Delivery
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 px-4 py-2 bg-teal/5 text-teal rounded-full border border-teal/10">
+                        <CheckCircle size={14} />
+                        <span className="text-[10px] font-ui font-bold uppercase tracking-widest">
+                          {order.status}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
 

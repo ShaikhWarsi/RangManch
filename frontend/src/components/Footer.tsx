@@ -241,31 +241,26 @@ export const Footer: React.FC = () => {
               marginBottom: '20px',
               color: defaultTheme.colors.ivory
             }}>
-              Trusted by Thousands
+              Our Commitment
             </h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{
-                fontFamily: 'Inter',
-                fontSize: '0.9rem',
-                opacity: 0.9,
-                marginBottom: '8px'
-              }}>
-                🏆 Award-Winning Platform
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                <span style={{ fontSize: '1.1rem' }}>🏆</span>
+                <span style={{ fontFamily: 'Inter', fontSize: '0.9rem', opacity: 0.9, lineHeight: '1.5' }}>
+                  Every piece verified for authenticity
+                </span>
               </div>
-              <div style={{
-                fontFamily: 'Inter',
-                fontSize: '0.9rem',
-                opacity: 0.9,
-                marginBottom: '8px'
-              }}>
-                ⭐ 15,000+ Happy Customers
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                <span style={{ fontSize: '1.1rem' }}>🎨</span>
+                <span style={{ fontFamily: 'Inter', fontSize: '0.9rem', opacity: 0.9, lineHeight: '1.5' }}>
+                  Supporting living craft traditions
+                </span>
               </div>
-              <div style={{
-                fontFamily: 'Inter',
-                fontSize: '0.9rem',
-                opacity: 0.9
-              }}>
-                🎨 500+ Artisan Partners
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                <span style={{ fontSize: '1.1rem' }}>🤝</span>
+                <span style={{ fontFamily: 'Inter', fontSize: '0.9rem', opacity: 0.9, lineHeight: '1.5' }}>
+                  Fair wages for artisan families
+                </span>
               </div>
             </div>
           </div>
@@ -285,6 +280,17 @@ export const Footer: React.FC = () => {
             margin: 0
           }}>
             2024 Rangmanch. All rights reserved. | Built by Team AC-DC | 
+            <a 
+              href="/contact" 
+              style={{
+                color: defaultTheme.colors.ivory,
+                textDecoration: 'none',
+                margin: '0 8px'
+              }}
+            >
+              Contact Us
+            </a>
+            |
             <a 
               href="/privacy" 
               style={{

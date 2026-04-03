@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ShoppingCart, Menu, X, User, LogOut } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import CartDrawer from './CartDrawer';
 
 interface NavItem {
   id: string;
@@ -12,19 +13,28 @@ interface NavItem {
   path: string;
 }
 
-const IndianNavbarFixed: React.FC = () => {
+interface IndianNavbarFixedProps {
+  className?: string;
+  style?: React.CSSProperties;
+}
+
+const IndianNavbarFixed: React.FC<IndianNavbarFixedProps> = ({ className, style }) => {
   const router = useRouter();
   const { cartItems } = useCart();
-  const { currentUser, logout } = useAuth();
+  const { currentUser, userRole, logout } = useAuth();
   const [isScrolled, setIsScrolled] = useState<boolean>(false);
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
+  const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
   
   const navItems: NavItem[] = [
     { id: "home", label: "Home", path: "/" },
     { id: "map", label: "Cultural Map", path: "/india" },
     { id: "marketplace", label: "Marketplace", path: "/trade" },
     { id: "artisans", label: "Artisans", path: "/artisans" },
+    ...(userRole === 'artisan' ? [{ id: "dashboard", label: "Workshop", path: "/artisan/dashboard" }] : []),
+    ...(userRole === 'ngo' ? [{ id: "ngo-dashboard", label: "NGO Hub", path: "/ngo/dashboard" }] : []),
+    { id: "contact", label: "Contact", path: "/contact" },
   ];
 
   useEffect(() => {
@@ -77,17 +87,19 @@ const IndianNavbarFixed: React.FC = () => {
   return (
     <>
       <nav
+        style={style}
         className={`
-          fixed top-0 left-1/2 -translate-x-1/2 z-[3000] 
+          fixed left-1/2 -translate-x-1/2 z-[3000] 
           transition-all duration-500 ease-in-out
           flex items-center
           px-6 py-3 md:px-10 md:py-4
           rounded-b-3xl border border-white/20
           backdrop-blur-md
           ${isScrolled 
-            ? 'bg-white/90 w-[92%] max-w-[1100px] shadow-premium transition-all duration-500' 
-            : 'bg-white/40 w-[100%] max-w-full transition-all duration-500'
+            ? 'bg-white/90 w-[92%] max-w-[1100px] shadow-premium top-4 rounded-lg' 
+            : 'bg-white/40 w-[100%] max-w-full top-0 rounded-none border-none'
           }
+          ${className || ''}
         `}
       >
         {/* Brand Logo */}
@@ -138,7 +150,7 @@ const IndianNavbarFixed: React.FC = () => {
         {/* Action Buttons */}
         <div className="flex items-center gap-4 md:gap-6 ml-auto pl-6 border-l border-walnut/10">
           <button 
-            onClick={() => router.push("/trade")}
+            onClick={() => setIsCartOpen(true)}
             className="relative p-2 text-walnut/80 hover:text-maroon transition-colors"
             aria-label={`Shopping cart with ${cartItems.length} items`}
           >
@@ -171,7 +183,7 @@ const IndianNavbarFixed: React.FC = () => {
                 onClick={() => router.push("/signup")}
                 className="
                   bg-maroon text-ivory font-ui text-[13px] uppercase tracking-widest font-bold
-                  px-8 py-3 rounded-full border-0 cursor-pointer
+                  px-8 py-3 rounded-sm border-0 cursor-pointer
                   shadow-premium transition-all duration-300
                   hover:bg-walnut hover:-translate-y-0.5 hover:shadow-premium-hover
                 "
@@ -191,9 +203,12 @@ const IndianNavbarFixed: React.FC = () => {
         </div>
       </nav>
 
+      {/* Cart Drawer */}
+      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+
       {/* Mobile Menu Overlay */}
       {isMobile && isMenuOpen && (
-        <div className="fixed inset-0 z-[2500] bg-ivory/95 backdrop-blur-lg animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[4000] bg-ivory/95 backdrop-blur-lg animate-in fade-in duration-300">
           <div className="flex flex-col items-center justify-center h-full gap-10">
             {navItems.map((item) => (
               <button
@@ -213,7 +228,7 @@ const IndianNavbarFixed: React.FC = () => {
             </button>
             <button 
               onClick={() => handleNavigation("/signup")}
-              className="bg-maroon text-ivory font-ui text-lg uppercase tracking-widest font-bold px-12 py-4 rounded-full shadow-premium"
+              className="bg-maroon text-ivory font-ui text-lg uppercase tracking-widest font-bold px-12 py-4 rounded-sm shadow-premium"
             >
               Explore
             </button>

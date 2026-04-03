@@ -40,6 +40,7 @@ interface RazorpayOptions {
   currency: string;
   name: string;
   description: string;
+  order_id?: string;
   image?: string;
   handler: (response: RazorpayResponse) => void;
   prefill?: {
@@ -66,7 +67,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
   const { cartItems, removeFromCart, updateQuantity, getTotalPrice, checkout } = useCart();
   const router = useRouter();
 
-  const handleCheckout = (): void => {
+  const handleCheckout = async (): Promise<void> => {
     const total = getTotalPrice();
 
     if (total === 0) {
@@ -74,57 +75,68 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
       return;
     }
 
-    const options: RazorpayOptions = {
-      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_YOUR_KEY_HERE",
-      amount: total * 100,
-      currency: "INR",
-      name: "Rangmanch",
-      description: "Authentic Cultural Heritage Purchase",
-      image: "https://example.com/your_logo",
-      handler: function (_response: RazorpayResponse) {
-        // Payment processed
-        checkout('razorpay').then(order => {
-          if (order) {
-            onClose();
-            router.push("/orders");
-          }
-        });
-      },
-      prefill: {
-        name: "Customer Name",
-        email: "customer@example.com",
-        contact: "9999999999"
-      },
-      theme: {
-        color: "#6B1F2B"
-      }
-    };
-
     try {
-      if (typeof window !== 'undefined' && window.Razorpay) {
-        const rzp1 = new window.Razorpay(options);
-        rzp1.open();
-      } else {
+      if (!window.Razorpay) {
         throw new Error("Razorpay not loaded");
       }
+
+      // 1. Create order in backend and get keyId + orderId
+      const order = await checkout('razorpay');
+      
+      if (!order || !(order as any).razorpayKeyId) {
+        throw new Error("Razorpay not configured or not loaded");
+      }
+
+      const razorpayKey = (order as any).razorpayKeyId;
+      const razorpayOrderId = (order as any).razorpayOrderId;
+
+      // 2. Open Razorpay checkout
+      const options: RazorpayOptions = {
+        key: razorpayKey,
+        amount: total * 100,
+        currency: "INR",
+        name: "Rangmanch",
+        description: "Authentic Cultural Heritage Purchase",
+        order_id: razorpayOrderId,
+        image: "https://example.com/your_logo",
+        handler: function (_response: RazorpayResponse) {
+          // Payment processed successfully
+          onClose();
+          router.push("/orders");
+        },
+        prefill: {
+          name: "Customer Name",
+          email: "customer@example.com",
+          contact: "9999999999"
+        },
+        theme: {
+          color: "#6B1F2B"
+        }
+      };
+
+      const rzp1 = new window.Razorpay(options);
+      rzp1.open();
+      
     } catch (error) {
-      console.error("Payment Error:", error);
-      // Graceful fallback UI
+      console.warn("Switching to manual/COD checkout fallback:", error);
+      
+      // Graceful fallback UI - Manual/COD Confirmation
       if (typeof window !== 'undefined') {
         const fallbackMessage = `
           ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           🏺 RANGMANCH HERITAGE MARKETPLACE
           ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           
-          Payment Processing
+          Payment Gateway (Razorpay) is currently unavailable 
+          or not configured in this environment.
+          
+          Would you like to proceed with manual confirmation?
           
           • Order Total: ₹${total.toLocaleString('en-IN')}
           • Artisan Heritage Items: ${cartItems.length}
           
           Your order supports traditional Indian artisans
           and preserves cultural heritage techniques.
-          
-          Confirm to complete your heritage acquisition?
           ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         `;
         
@@ -176,7 +188,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
             </p>
             <button
               onClick={onClose}
-              className="px-8 py-3 bg-maroon text-ivory rounded-full font-ui font-bold text-xs uppercase tracking-widest shadow-premium hover:bg-walnut transition-all"
+              className="px-8 py-3 bg-maroon text-ivory rounded-sm font-ui font-bold text-xs uppercase tracking-widest shadow-premium hover:bg-walnut transition-all"
             >
               Discover Crafts
             </button>
@@ -189,9 +201,9 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
                   key={item.id}
                   className="flex gap-6 py-8 border-b border-sand/10 group animate-in fade-in slide-in-from-bottom-2"
                 >
-                  <div className="w-24 h-24 rounded-2xl overflow-hidden bg-sand/5 border border-sand/10">
+                  <div className="w-24 h-24 rounded-md overflow-hidden bg-sand/5 border border-sand/10 shrink-0">
                     <img
-                      src={item.img || item.image}
+                      src={item.image || item.img || "https://images.unsplash.com/photo-1518644749705-54458630c263?w=200&h=200&fit=crop"}
                       alt={item.name || item.title || "Product"}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
@@ -250,7 +262,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
 
               <button
                 onClick={handleCheckout}
-                className="w-full py-4 bg-maroon text-ivory rounded-full font-ui font-bold text-sm shadow-premium hover:bg-walnut transition-all flex items-center justify-center gap-3 mb-4"
+                className="w-full py-4 bg-maroon text-ivory rounded-sm font-ui font-bold text-sm shadow-premium hover:bg-walnut transition-all flex items-center justify-center gap-3 mb-4"
               >
                 Proceed to Acquisition
                 <ArrowRight size={18} />

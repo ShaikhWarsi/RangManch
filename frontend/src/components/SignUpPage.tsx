@@ -149,18 +149,7 @@ const SignUpPage: React.FC = () => {
         backdropFilter: 'blur(4px)'
       }} />
       
-      <div style={{
-        position: 'relative',
-        backgroundColor: 'rgba(255, 255, 240, 0.95)',
-        padding: '40px',
-        borderRadius: '16px',
-        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
-        width: '100%',
-        maxWidth: '450px',
-        margin: '20px',
-        maxHeight: '90vh',
-        overflowY: 'auto'
-      }}>
+      <div className="relative bg-ivory/90 p-10 rounded-lg shadow-large w-full max-w-md mx-5 max-h-[90vh] overflow-y-auto">
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
           <h1 style={{
             fontFamily: 'serif',

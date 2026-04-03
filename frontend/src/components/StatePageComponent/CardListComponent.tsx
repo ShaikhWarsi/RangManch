@@ -4,12 +4,11 @@ import "./StateComponent.css";
 
 interface CardListProps {
   cards: { imageSrc: string }[];
-  currentIndex: number;
   onPrevClick: () => void;
   onNextClick: () => void;
 }
 
-const CardList = ({ cards, currentIndex, onPrevClick, onNextClick }: CardListProps) => {
+const CardList = ({ cards, onPrevClick, onNextClick }: CardListProps) => {
   const states = ["previous--card", "current--card", "next--card"];
   return (
     <div className="cardList">

@@ -10,10 +10,9 @@ interface InfoData {
 
 interface InfoListProps {
   infos: InfoData[];
-  currentIndex: number;
 }
 
-const InfoList = ({ infos, currentIndex }: InfoListProps) => {
+const InfoList = ({ infos }: InfoListProps) => {
   const states = ["previous--info", "current--info", "next--info"];
   return (
     <div className="infoList">

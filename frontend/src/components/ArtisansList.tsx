@@ -308,7 +308,7 @@ export const ArtisansList: React.FC = () => {
             The Living Archive
           </h1>
           <p className="max-w-2xl mx-auto text-lg text-ivory/70 leading-relaxed font-heading italic">
-            Connecting collectors with the master craftspeople preserving India's timeless heritage.
+            Connecting collectors with the master craftspeople preserving India&apos;s timeless heritage.
           </p>
 
           <div className="flex flex-wrap justify-center gap-6 mt-12">
@@ -385,7 +385,6 @@ export const ArtisansList: React.FC = () => {
                   {artisan.region} India
                 </div>
               </div>
-
               <div className="p-8 flex-1 flex flex-col">
                 <div className="mb-6">
                   <div className="text-[10px] font-ui font-bold uppercase tracking-widest text-gold mb-1">{artisan.craft}</div>
@@ -397,12 +396,12 @@ export const ArtisansList: React.FC = () => {
                 </div>
 
                 <p className="text-sm text-walnut/60 leading-relaxed mb-8 italic font-heading line-clamp-2">
-                  "{artisan.story}"
+                  &quot;{artisan.story}&quot;
                 </p>
 
                 <div className="flex flex-wrap gap-2 mb-8">
                   {artisan.specialties.map((s, i) => (
-                    <span key={i} className="px-3 py-1 bg-sand/10 border border-sand/20 rounded-lg text-[10px] font-ui font-bold text-walnut/50 uppercase tracking-widest">
+                    <span key={i} className="bg-sand/10 text-walnut/60 text-xs font-ui font-bold uppercase tracking-widest px-3 py-1 rounded-full">
                       {s}
                     </span>
                   ))}

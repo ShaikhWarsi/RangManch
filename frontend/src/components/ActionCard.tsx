@@ -13,7 +13,6 @@ import "aos/dist/aos.css";
 interface ParallaxCardProps {
   images: string;
   title: string;
-  subheading?: string;
   delay: number;
   url: string;
   bgColor?: string;
@@ -26,7 +25,6 @@ interface ParallaxCardProps {
 const ParallaxCard = ({
   images,
   title,
-  subheading,
   delay,
   url,
   bgColor = "",

@@ -71,7 +71,7 @@ export const getStateByName = asyncHandler(async (req: Request, res: Response): 
 export const deleteState = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const { stateName } = req.params;
 
-  const deletedItem: IState | null = await State.findOneAndDelete({ stateID: stateName });
+  const deletedItem: IState | null = await State.findOneAndDelete({ stateID: stateName }) as unknown as IState | null;
 
   if (!deletedItem) {
     res.status(404).json({ success: false, message: "State not found" });

@@ -5,7 +5,6 @@ import { AuthProvider } from '@/context/AuthContext'
 import { CartProvider } from '@/context/CartContext'
 import RoleSwitcher from '@/components/RoleSwitcher'
 import ConnectionStatus from '@/components/ConnectionStatus'
-import AIAssistant from '@/components/AIAssistant'
 import AICraftRecommender from '@/components/AICraftRecommender'
 
 const inter = Inter({ subsets: ['latin'] })

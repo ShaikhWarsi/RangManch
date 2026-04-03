@@ -486,3 +486,37 @@ button:hover {
 .feature-card, button {
   transition: all 0.3s ease;
 }
+
+#hero-particles > div {
+  animation: float-particle 6s ease-in-out infinite;
+  opacity: 0;
+}
+
+#hero-particles > div:nth-child(odd) {
+  animation-direction: alternate-reverse;
+}
+
+#hero-particles > div:nth-child(3n) {
+  animation-duration: 8s;
+}
+
+#hero-particles > div:nth-child(5n) {
+  animation-duration: 5s;
+}
+
+@keyframes float-particle {
+  0%, 100% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(-30px) translateX(15px);
+    opacity: 0.4;
+  }
+  90% {
+    opacity: 0.6;
+  }
+}

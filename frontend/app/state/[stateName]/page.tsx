@@ -1,11 +1,5 @@
 import StatePage from '@/components/StatePage'
 
-interface StatePageProps {
-  params: {
-    stateName: string
-  }
-}
-
 // Generate static params for common Indian states
 export async function generateStaticParams() {
   return [
@@ -20,6 +14,6 @@ export async function generateStaticParams() {
   ];
 }
 
-export default function StatePageRoute({ params }: StatePageProps) {
+export default function StatePageRoute() {
   return <StatePage />
 }

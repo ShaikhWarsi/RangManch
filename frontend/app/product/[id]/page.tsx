@@ -3,7 +3,6 @@ import { notFound } from 'next/navigation'
 import IndianNavbarFixed from '@/components/IndianNavbarFixed'
 import { Footer } from '@/components/Footer'
 import { useCart } from '@/context/CartContext'
-import { ProductDetailSkeleton } from '@/components/SkeletonLoading'
 import { apiService, mockProducts } from '@/services/api'
 import { 
   ShoppingCart, 
@@ -18,7 +17,6 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react'
-import { defaultTheme } from '@/types/theme'
 
 interface ProductPageProps {
   params: { id: string }
@@ -44,7 +42,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     // Try to fetch from real API first
     const response = await apiService.getProduct(params.id);
     product = response.data;
-  } catch (error) {
+  } catch {
     // Product not found in API, checking mock data
     product = mockProducts.find(p => p._id === params.id);
   }

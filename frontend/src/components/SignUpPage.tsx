@@ -123,8 +123,8 @@ const SignUpPage: React.FC = () => {
         default:
           router.push('/trade');
       }
-    } catch (error: any) {
-      setServerError(error.message || 'Sign up failed. Please try again.');
+    } catch (error: unknown) {
+      setServerError((error as Error).message || 'Sign up failed. Please try again.');
     } finally {
       setLoading(false);
     }

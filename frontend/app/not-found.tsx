@@ -28,7 +28,7 @@ export default function NotFound() {
         </h1>
         
         <p className="text-lg text-walnut/60 font-ui text-center mb-12 max-w-md">
-          The artisan craft you're looking for seems to have wandered off. 
+          The artisan craft you&apos;re looking for seems to have wandered off. 
           Let us guide you back to our cultural marketplace.
         </p>
 

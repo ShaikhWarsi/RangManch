@@ -1,5 +1,3 @@
-import { MessageCircle, Sparkles, Bot, Send, Loader, MapPin, Star, Clock, DollarSign } from 'lucide-react'
-
 export interface CraftRecommendation {
   artisan: {
     name: string;
@@ -125,7 +123,7 @@ RESPOND IN JSON FORMAT:
     let artisan = null;
     let product = { name: 'Handcrafted Item', price: 5000, description: 'Traditional craft item', category: 'Traditional', craft: 'Artisan Craft' };
     let reasoning = '';
-    let alternatives: any[] = [];
+    const alternatives: { name: string; price: number; reason: string }[] = [];
 
     for (const line of lines) {
       if (line.includes('Artisan:') || line.includes('Recommend:')) {

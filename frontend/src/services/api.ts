@@ -1,5 +1,5 @@
 // API service for connecting to the backend
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://yamxxx1-artisan.hf.space/api/v1';
 
 export interface Product {
   _id: string;

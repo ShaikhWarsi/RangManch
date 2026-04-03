@@ -69,10 +69,10 @@ interface ApiResponse<T> {
 
 class DatabaseService {
   private static instance: DatabaseService;
-  private mongoUri: string;
+  private apiUrl: string;
 
   private constructor() {
-    this.mongoUri = process.env.MONGODB_URL || 'mongodb://localhost:27017/rangmanch';
+    this.apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://yamxxx1-artisan.hf.space/api/v1';
   }
 
   public static getInstance(): DatabaseService {
@@ -93,7 +93,7 @@ class DatabaseService {
     verified?: boolean;
   } = {}): Promise<Product[]> {
     try {
-      const response = await fetch('/api/products', {
+      const response = await fetch(`${this.apiUrl}/products`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ filters })
@@ -109,7 +109,7 @@ class DatabaseService {
 
   async getProductById(id: string): Promise<Product | null> {
     try {
-      const response = await fetch(`/api/products/${id}`);
+      const response = await fetch(`${this.apiUrl}/products/${id}`);
       const result: ApiResponse<Product> = await response.json();
       return result.data || null;
     } catch (error) {
@@ -125,7 +125,7 @@ class DatabaseService {
     search?: string;
   } = {}): Promise<Artisan[]> {
     try {
-      const response = await fetch('/api/artisans', {
+      const response = await fetch(`${this.apiUrl}/artisans`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ filters })
@@ -141,7 +141,7 @@ class DatabaseService {
 
   async getArtisanById(id: string): Promise<Artisan | null> {
     try {
-      const response = await fetch(`/api/artisans/${id}`);
+      const response = await fetch(`${this.apiUrl}/artisans/${id}`);
       const result: ApiResponse<Artisan> = await response.json();
       return result.data || null;
     } catch (error) {
@@ -152,7 +152,7 @@ class DatabaseService {
 
   async createOrder(order: Order): Promise<Order | null> {
     try {
-      const response = await fetch('/api/orders', {
+      const response = await fetch(`${this.apiUrl}/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(order)
@@ -168,7 +168,7 @@ class DatabaseService {
 
   async getOrdersByUserId(userId: string): Promise<Order[]> {
     try {
-      const response = await fetch(`/api/orders/user/${userId}`);
+      const response = await fetch(`${this.apiUrl}/orders/user/${userId}`);
       const result: ApiResponse<Order[]> = await response.json();
       return result.data || [];
     } catch (error) {
@@ -179,7 +179,7 @@ class DatabaseService {
 
   async updateOrderStatus(orderId: string, status: string): Promise<Order | null> {
     try {
-      const response = await fetch(`/api/orders/${orderId}`, {
+      const response = await fetch(`${this.apiUrl}/orders/${orderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status, updatedAt: new Date() })

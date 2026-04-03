@@ -193,40 +193,13 @@ const TradePage: React.FC = () => {
     }
   ];
 
-  const staticArtisans: Artisan[] = [
-    {
-      id: 1,
-      name: "Monika Das",
-      title: "Master Weaver",
-      location: "Varanasi, UP",
-      craft: "Banarasi Silk",
-      experience: "35 years",
-      story: "8th generation weaver preserving ancient Jamdani techniques",
-      image: "https://static.wixstatic.com/media/4594f8_7057921b8d494498a115f1cab32a633f~mv2.jpg/v1/fill/w_568,h_482,al_c,q_80,usm_0.66_1.00_0.01,enc_avif,quality_auto/4594f8_7057921b8d494498a115f1cab32a633f~mv2.jpg?w=400&h=500&fit=crop",
-      products: 42,
-      rating: "4.9"
-    },
-    {
-      id: 2,
-      name: "Lakshmi Ammal",
-      title: "Kanjivaram Weaver",
-      location: "Kanchipuram, TN",
-      craft: "Silk Sarees",
-      experience: "28 years",
-      story: "Specializes in temple-inspired motifs using pure mulberry silk",
-      image: "https://static.fibre2fashion.com//articleresources/images/105/10481/Cover-s_Small.jpg?w=400&h=500&fit=crop",
-      products: 38,
-      rating: "4.8"
-    }
-  ];
-
   return (
     <div className="min-h-screen bg-ivory font-body">
       <IndianNavbarFixed />
 
       <div className="h-[60vh] bg-cover bg-center flex flex-col items-center justify-center text-ivory text-center px-8 relative" style={{ backgroundImage: "linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1590073844006-33379778ae09?w=1600&q=80')" }}>
         <h1 className="text-6xl md:text-7xl font-heading mb-8 tracking-tight-editorial">
-          India's Master Artisans,<br />Direct to Your Home
+          India&apos;s Master Artisans,<br />Direct to Your Home
         </h1>
         <p className="text-xl max-w-2xl opacity-80 font-heading italic text-ivory">
           Directly from the hands of master artisans to your home.

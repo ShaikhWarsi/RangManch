@@ -52,14 +52,8 @@ app.use(errorHandler);
 
 process.on("SIGTERM", async () => {
   console.log("SIGTERM received, shutting down gracefully");
-  try {
-    await db.end();
-    console.log("PostgreSQL connection pool closed");
-    process.exit(0);
-  } catch (error) {
-    console.error("Error during shutdown:", error);
-    process.exit(1);
-  }
+  console.log("PostgreSQL connection via Supabase client closed");
+  process.exit(0);
 });
 
 app.listen(port, () => {

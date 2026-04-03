@@ -1,7 +1,96 @@
 import { Router } from "express";
 import supabase from "../db";
+import RazorpayService from "../services/razorpayService";
 
 const router = Router();
+
+// Create payment order
+router.post("/create-payment", async (req: any, res: any) => {
+  try {
+    const { amount, currency = 'INR', receipt, customer_name, customer_email, products } = req.body;
+
+    if (!amount || !receipt) {
+      return res.status(400).json({ success: false, error: "Amount and receipt are required" });
+    }
+
+    const order = await RazorpayService.createOrder({
+      amount,
+      currency,
+      receipt,
+      notes: {
+        customer_name,
+        customer_email,
+        products: JSON.stringify(products)
+      }
+    });
+
+    res.json({ 
+      success: true, 
+      order,
+      keyId: RazorpayService.getTestCredentials().keyId,
+      testMode: true
+    });
+  } catch (error: any) {
+    console.error('Create payment order error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Verify payment
+router.post("/verify-payment", async (req: any, res: any) => {
+  try {
+    const { paymentId, orderId, signature, orderData } = req.body;
+
+    if (!paymentId || !orderId || !signature) {
+      return res.status(400).json({ success: false, error: "Payment ID, Order ID, and signature are required" });
+    }
+
+    const isValid = await RazorpayService.verifyPayment(paymentId, orderId, signature);
+
+    if (!isValid) {
+      return res.status(400).json({ success: false, error: "Invalid payment signature" });
+    }
+
+    // Save order to database
+    const { data, error } = await supabase.from('orders').insert([
+      {
+        order_id: orderId,
+        payment_id: paymentId,
+        amount: orderData.amount,
+        currency: orderData.currency || 'INR',
+        customer_name: orderData.customer_name,
+        customer_email: orderData.customer_email,
+        customer_contact: orderData.customer_contact,
+        products: orderData.products,
+        status: 'paid',
+        payment_verified: true
+      }
+    ]).select();
+
+    if (error) throw error;
+
+    res.json({ 
+      success: true, 
+      order: data?.[0],
+      message: "Payment verified and order saved successfully"
+    });
+  } catch (error: any) {
+    console.error('Verify payment error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Get payment details
+router.get("/payment/:paymentId", async (req: any, res: any) => {
+  try {
+    const { paymentId } = req.params;
+    const payment = await RazorpayService.fetchPayment(paymentId);
+    res.json({ success: true, payment });
+  } catch (error: any) {
+    console.error('Fetch payment error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
 
 router.get("/", async (req: any, res: any) => {
   try {

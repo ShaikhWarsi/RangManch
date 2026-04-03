@@ -2,7 +2,7 @@ export interface Review {
   user: string;
   comment: string;
   rating: number;
-  date?: string;
+  date: string;
 }
 
 export interface Product {
@@ -14,12 +14,15 @@ export interface Product {
   description: string;
   material?: string;
   craftsmanship?: string;
-  imageUrl: string;
+  craft?: string; // For backward compatibility
+  imageUrl?: string; // For backward compatibility
+  images?: string[]; // Array of image URLs (including uploaded base64 images)
   inStock: boolean;
   quantity: number;
   artisanId?: string;
   dateAdded?: string;
   salesCount?: number;
+  rating?: number;
   reviews?: Review[];
 }
 

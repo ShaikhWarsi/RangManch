@@ -32,6 +32,19 @@ export const createProduct = asyncHandler(async (req: Request, res: Response): P
   res.status(201).json({ success: true, data: newProduct });
 });
 
+// Update an existing product
+export const updateProduct = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+  const updatedProduct: IProduct | null = await Product.findByIdAndUpdate(id, req.body, { new: true, runValidators: true });
+
+  if (!updatedProduct) {
+    res.status(404).json({ success: false, error: "Product not found" });
+    return;
+  }
+
+  res.json({ success: true, data: updatedProduct });
+});
+
 // Get products by artisan with pagination
 export const getProductsByArtisan = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const { artisanId } = req.params;

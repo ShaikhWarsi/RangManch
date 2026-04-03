@@ -7,16 +7,19 @@ export interface Product {
   description: string;
   price: number;
   category: string;
+  craft?: string;
   artisanId: string;
   images: string[];
   inStock: boolean;
   rating?: number;
   reviews?: Array<{
-    userId: string;
+    user: string;
     rating: number;
     comment: string;
-    createdAt: string;
+    date: string;
   }>;
+  quantity?: number;
+  salesCount?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -94,16 +97,11 @@ class ApiService {
 
   // Product endpoints
   async getProducts(page = 1, limit = 10): Promise<ApiResponse<Product[]>> {
-    try {
-      return await this.request<Product[]>(`/products?page=${page}&limit=${limit}`);
-    } catch (error) {
-      // Using mock data fallback
-      return {
-        success: true,
-        data: mockProducts,
-        error: 'Using mock data due to API failure'
-      };
-    }
+    // ALWAYS use mock data for now to debug marketplace display
+    return {
+      success: true,
+      data: mockProducts,
+    };
   }
 
   async getProduct(id: string): Promise<ApiResponse<Product>> {
@@ -148,6 +146,18 @@ class ApiService {
     }
   }
 
+  async updateProduct(id: string, productData: Partial<Product>): Promise<ApiResponse<Product>> {
+    try {
+      return await this.request<Product>(`/products/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(productData),
+      });
+    } catch (error) {
+      // Failed to update product
+      throw error;
+    }
+  }
+
   async deleteProduct(id: string): Promise<ApiResponse<void>> {
     try {
       return await this.request<void>(`/products/${id}`, {
@@ -172,17 +182,12 @@ class ApiService {
   }
 
   // Artisan endpoints (using states endpoint for now since it exists)
-  async getArtisans(page = 1, limit = 10): Promise<ApiResponse<any[]>> {
-    try {
-      return await this.request<any[]>(`/states?page=${page}&limit=${limit}`);
-    } catch (error) {
-      // Using mock data fallback
-      return {
-        success: true,
-        data: mockArtisans,
-        error: 'Using mock data due to API failure'
-      };
-    }
+  async getArtisans(page = 1, limit = 10): Promise<ApiResponse<Artisan[]>> {
+    // ALWAYS use mock data for now to debug marketplace display
+    return {
+      success: true,
+      data: mockArtisans,
+    };
   }
 
   async getArtisan(id: string): Promise<ApiResponse<any>> {

@@ -81,6 +81,24 @@ router.post("/products", async (req: any, res: any) => {
   }
 });
 
+router.put("/products/:id", async (req: any, res: any) => {
+  try {
+    const { id } = req.params;
+    const { name, description, price, category, craft, artisan_id, images, in_stock, quantity } = req.body;
+    const { data, error } = await supabase.from('products').update(
+      { name, description, price, category, craft, artisan_id, images, in_stock, quantity, updated_at: new Date().toISOString() }
+    ).eq('id', id).select();
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      return res.status(404).json({ success: false, error: "Product not found" });
+    }
+    res.json({ success: true, data: data[0] });
+  } catch (error: any) {
+    console.error('Update product error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 router.get("/products/artisan/:artisanId", async (req: any, res: any) => {
   try {
     const { artisanId } = req.params;

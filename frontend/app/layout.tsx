@@ -7,6 +7,7 @@ import { CartProvider } from '@/context/CartContext'
 import RoleSwitcher from '@/components/RoleSwitcher'
 import ConnectionStatus from '@/components/ConnectionStatus'
 import AICraftRecommender from '@/components/AICraftRecommender'
+import { PerformanceMonitor } from '@/components/PerformanceMonitor'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -23,16 +24,22 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {/* Font preconnects - these are used immediately */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        
+        {/* Image CDN preconnect - used for product images */}
         <link rel="preconnect" href="https://images.unsplash.com" />
-        <link rel="preconnect" href="https://modelviewer.dev" />
         <link rel="dns-prefetch" href="https://images.unsplash.com" />
+        
+        {/* Only preconnect modelviewer if actually used on the page */}
+        {/* This will be handled dynamically by components that need it */}
       </head>
       <body className={inter.className}>
         <AuthProvider>
           <CartProvider>
             {children}
+            <PerformanceMonitor />
             <ConnectionStatus />
             <RoleSwitcher />
             <AICraftRecommender />

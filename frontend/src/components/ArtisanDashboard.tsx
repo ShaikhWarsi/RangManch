@@ -1,9 +1,10 @@
 'use client'
 
 import React, { useState, useEffect } from "react";
-import { Footer } from "../components/Footer";
-import IndianNavbarFixed from "../components/IndianNavbarFixed";
+import { Footer } from "./Footer";
+import IndianNavbarFixed from "./IndianNavbarFixed";
 import { Product, ArtisanInfo, Category } from "../types";
+import { apiService } from "../services/api";
 
 export const ArtisanDashboard: React.FC = () => {
   const [artisanProducts, setArtisanProducts] = useState<Product[]>([]);
@@ -26,6 +27,12 @@ export const ArtisanDashboard: React.FC = () => {
     inStock: true,
     quantity: 1
   });
+
+  // File upload state
+  const [uploadedImages, setUploadedImages] = useState<File[]>([]);
+  const [imagePreview, setImagePreview] = useState<string[]>([]);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
 
   // Premium Indian color palette
   const colors = {
@@ -126,11 +133,9 @@ export const ArtisanDashboard: React.FC = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch("http://localhost:3001/api/products");
-        if (!response.ok) throw new Error("Backend not available");
-        const data = await response.json();
-        if (data && data.length > 0) {
-          setArtisanProducts(data);
+        const response = await apiService.getProductsByArtisan(artisanInfo.id.toString());
+        if (response.success && response.data && response.data.length > 0) {
+          setArtisanProducts(response.data);
         } else {
           setArtisanProducts(defaultProducts);
         }
@@ -181,6 +186,89 @@ export const ArtisanDashboard: React.FC = () => {
     }));
   };
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    processFiles(files);
+  };
+
+  const processFiles = (files: File[]) => {
+    // Validate files
+    const validFiles = files.filter(file => {
+      const isValidType = file.type.startsWith('image/');
+      const isValidSize = file.size <= 5 * 1024 * 1024; // 5MB limit
+      
+      if (!isValidType) {
+        alert(`${file.name} is not a valid image file`);
+        return false;
+      }
+      if (!isValidSize) {
+        alert(`${file.name} is too large. Maximum size is 5MB`);
+        return false;
+      }
+      return true;
+    });
+
+    setUploadedImages(prev => [...prev, ...validFiles]);
+
+    // Create previews
+    validFiles.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(prev => [...prev, e.target?.result as string]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    const files = Array.from(e.dataTransfer.files);
+    processFiles(files);
+  };
+
+  const removeUploadedImage = (index: number) => {
+    setUploadedImages(prev => prev.filter((_, i) => i !== index));
+    setImagePreview(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const convertToBase64 = async (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const processImagesForSubmission = async (): Promise<string[]> => {
+    const imageUrls: string[] = [];
+    
+    // Add uploaded images as base64
+    for (const file of uploadedImages) {
+      const base64 = await convertToBase64(file);
+      imageUrls.push(base64);
+    }
+    
+    // Add existing URL if provided
+    if (productForm.imageUrl) {
+      imageUrls.push(productForm.imageUrl);
+    }
+    
+    return imageUrls;
+  };
+
   const generateAIDescription = async () => {
     if (!productForm.name) {
       alert("Please enter a product name first!");
@@ -218,29 +306,47 @@ export const ArtisanDashboard: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validate that at least one image is provided
+    if (uploadedImages.length === 0 && !productForm.imageUrl) {
+      alert("Please upload at least one image or provide an image URL");
+      return;
+    }
+    
     try {
+      const imageUrls = await processImagesForSubmission();
+      
       if (editingProduct) {
-        setArtisanProducts(prev => 
-          prev.map(p => (p._id || p.id) === (editingProduct._id || editingProduct.id) ? { ...productForm, _id: editingProduct._id, id: editingProduct.id } : p)
-        );
+        const updatedProductData = {
+          name: productForm.name,
+          price: parseFloat(productForm.price.replace(/,/g, '')),
+          category: productForm.category,
+          description: productForm.description,
+          material: productForm.material,
+          craftsmanship: productForm.craftsmanship,
+          imageUrl: imageUrls[0] || productForm.imageUrl, // Use first image as primary
+          images: imageUrls, // Store all images
+          inStock: productForm.inStock,
+          quantity: productForm.quantity,
+        };
+        const response = await apiService.updateProduct(editingProduct._id || editingProduct.id!, updatedProductData);
+        if (response.success) {
+          setArtisanProducts(prev =>
+            prev.map(p => (p._id || p.id) === (editingProduct._id || editingProduct.id) ? { ...editingProduct, ...updatedProductData, _id: editingProduct._id, id: editingProduct.id } : p)
+          );
+        }
       } else {
         const productToAdd = {
           ...productForm,
+          price: parseFloat(productForm.price.replace(/,/g, '')),
           artisanId: artisanInfo.id.toString(),
-          dateAdded: new Date().toISOString()
+          dateAdded: new Date().toISOString(),
+          imageUrl: imageUrls[0] || productForm.imageUrl, // Use first image as primary
+          images: imageUrls // Store all images
         };
 
-        const response = await fetch("http://localhost:3001/api/products", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(productToAdd),
-        });
-
-        const result = await response.json();
-        if (result.success) {
-          setArtisanProducts(prev => [result.product, ...prev]);
+        const response = await apiService.createProduct(productToAdd);
+        if (response.success) {
+          setArtisanProducts(prev => [response.data, ...prev]);
         }
       }
     } catch (error) {
@@ -258,6 +364,8 @@ export const ArtisanDashboard: React.FC = () => {
       inStock: true,
       quantity: 1
     });
+    setUploadedImages([]);
+    setImagePreview([]);
     setShowUploadForm(false);
     setEditingProduct(null);
   };
@@ -272,11 +380,8 @@ export const ArtisanDashboard: React.FC = () => {
     if (!productId) return;
     if (typeof window !== 'undefined' && window.confirm('Are you sure you want to delete this product?')) {
       try {
-        const response = await fetch(`http://localhost:3001/api/products/${productId}`, {
-          method: "DELETE",
-        });
-        const result = await response.json();
-        if (result.success) {
+        const response = await apiService.deleteProduct(productId);
+        if (response.success) {
           setArtisanProducts(prev => prev.filter(p => (p._id || p.id) !== productId));
         }
       } catch (error) {
@@ -409,6 +514,8 @@ export const ArtisanDashboard: React.FC = () => {
                 inStock: true,
                 quantity: 1
               });
+              setUploadedImages([]);
+              setImagePreview([]);
             }}
             style={{
               padding: "15px 40px",
@@ -631,25 +738,138 @@ export const ArtisanDashboard: React.FC = () => {
               />
             </div>
 
-            <div>
+            <div style={{ gridColumn: "span 2" }}>
               <label style={{ display: "block", marginBottom: "10px", fontWeight: "600", color: colors.maroon }}>
-                Image URL *
+                Product Images *
               </label>
-              <input
-                type="url"
-                name="imageUrl"
-                value={productForm.imageUrl}
-                onChange={handleInputChange}
-                required
+              
+              {/* File Upload Area */}
+              <div 
                 style={{
-                  width: "100%",
-                  padding: "15px",
-                  border: `2px solid ${colors.gold}40`,
+                  border: `2px dashed ${isDragging ? colors.maroon : colors.gold}60`,
                   borderRadius: "10px",
-                  fontSize: "1rem"
+                  padding: "30px",
+                  textAlign: "center",
+                  backgroundColor: isDragging ? colors.maroon + "10" : colors.gold + "10",
+                  marginBottom: "20px",
+                  cursor: "pointer",
+                  transition: "all 0.3s ease",
+                  transform: isDragging ? "scale(1.02)" : "scale(1)"
                 }}
-                placeholder="https://example.com/image.jpg"
-              />
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+              >
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  style={{ display: "none" }}
+                  id="image-upload"
+                />
+                <label htmlFor="image-upload" style={{ cursor: "pointer" }}>
+                  <div style={{ fontSize: "3rem", marginBottom: "10px" }}>
+                    {isDragging ? "📥" : "📸"}
+                  </div>
+                  <div style={{ fontSize: "1.1rem", color: colors.maroon, fontWeight: "600", marginBottom: "5px" }}>
+                    {isDragging ? "Drop images here" : "Click to Upload Images"}
+                  </div>
+                  <div style={{ fontSize: "0.9rem", color: colors.walnut, opacity: 0.8 }}>
+                    or drag and drop • PNG, JPG, GIF up to 5MB each
+                  </div>
+                </label>
+              </div>
+
+              {/* Image Preview Grid */}
+              {imagePreview.length > 0 && (
+                <div style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))",
+                  gap: "15px",
+                  marginBottom: "20px"
+                }}>
+                  {imagePreview.map((preview, index) => (
+                    <div key={index} style={{
+                      position: "relative",
+                      borderRadius: "8px",
+                      overflow: "hidden",
+                      border: `2px solid ${colors.gold}40`,
+                      backgroundColor: "white"
+                    }}>
+                      <img
+                        src={preview}
+                        alt={`Preview ${index + 1}`}
+                        style={{
+                          width: "100%",
+                          height: "120px",
+                          objectFit: "cover"
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeUploadedImage(index)}
+                        style={{
+                          position: "absolute",
+                          top: "5px",
+                          right: "5px",
+                          background: colors.maroon,
+                          color: "white",
+                          border: "none",
+                          borderRadius: "50%",
+                          width: "25px",
+                          height: "25px",
+                          cursor: "pointer",
+                          fontSize: "12px",
+                          fontWeight: "bold",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center"
+                        }}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Fallback URL Input */}
+              <div style={{
+                padding: "15px",
+                backgroundColor: colors.sand + "20",
+                borderRadius: "8px",
+                border: `1px solid ${colors.sand}40`
+              }}>
+                <label style={{ display: "block", marginBottom: "8px", fontSize: "0.9rem", color: colors.walnut }}>
+                  Or provide image URL (optional):
+                </label>
+                <input
+                  type="url"
+                  name="imageUrl"
+                  value={productForm.imageUrl}
+                  onChange={handleInputChange}
+                  style={{
+                    width: "100%",
+                    padding: "10px",
+                    border: `1px solid ${colors.sand}60`,
+                    borderRadius: "6px",
+                    fontSize: "0.9rem"
+                  }}
+                  placeholder="https://example.com/image.jpg"
+                />
+              </div>
+              
+              {uploadedImages.length === 0 && !productForm.imageUrl && (
+                <p style={{ 
+                  color: colors.maroon, 
+                  fontSize: "0.8rem", 
+                  marginTop: "5px",
+                  opacity: 0.8 
+                }}>
+                  Please upload at least one image or provide an image URL
+                </p>
+              )}
             </div>
 
             <div>
@@ -800,62 +1020,82 @@ export const ArtisanDashboard: React.FC = () => {
         </div>
 
         {activeTab === 'products' ? (
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))",
-          gap: "30px"
-        }}>
-          {artisanProducts.map((product) => (
-            <div
-              key={product._id || product.id}
-              style={{
-                background: "white",
-                borderRadius: "15px",
-                overflow: "hidden",
-                boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
-                border: `2px solid ${colors.purple}30`,
-                position: "relative",
-                transition: "all 0.3s ease",
-                transform: artisanHover === (product._id || product.id) ? "translateY(-5px)" : "none"
-              }}
-              onMouseEnter={() => setArtisanHover((product._id || product.id) as string)}
-              onMouseLeave={() => setArtisanHover(null)}
-            >
-              {product.imageUrl && (
-                <div style={{
-                  height: "200px",
-                  backgroundImage: `url(${product.imageUrl})`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                  position: "relative"
-                }}>
-                  <div style={{
-                    position: "absolute",
-                    top: "15px",
-                    right: "15px",
-                    background: product.inStock ? colors.green : "#999",
-                    color: "white",
-                    padding: "5px 15px",
-                    borderRadius: "20px",
-                    fontSize: "0.8rem"
-                  }}>
-                    {product.inStock ? `In Stock (${product.quantity})` : 'Out of Stock'}
+          artisanProducts.length > 0 ? (
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))",
+              gap: "30px"
+            }}>
+            {artisanProducts.map((product) => (
+              <div
+                key={product._id || product.id}
+                style={{
+                  background: "white",
+                  borderRadius: "15px",
+                  overflow: "hidden",
+                  boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
+                  border: `2px solid ${colors.purple}30`,
+                  position: "relative",
+                  transition: "all 0.3s ease",
+                  transform: artisanHover === (product._id || product.id) ? "translateY(-5px)" : "none"
+                }}
+                onMouseEnter={() => setArtisanHover((product._id || product.id) as string)}
+                onMouseLeave={() => setArtisanHover(null)}
+              >
+                {(() => {
+                  const primaryImage = product.images?.[0] || product.imageUrl;
+                  return primaryImage && (
+                    <div style={{
+                      height: "200px",
+                      backgroundImage: `url(${primaryImage})`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                      position: "relative"
+                    }}>
+                    <div style={{
+                      position: "absolute",
+                      top: "15px",
+                      right: "15px",
+                      background: product.inStock ? colors.green : "#999",
+                      color: "white",
+                      padding: "5px 15px",
+                      borderRadius: "20px",
+                      fontSize: "0.8rem"
+                    }}>
+                      {product.inStock ? `In Stock (${product.quantity})` : 'Out of Stock'}
+                    </div>
+                    <div style={{
+                      position: "absolute",
+                      bottom: "15px",
+                      left: "15px",
+                      background: colors.gold,
+                      color: colors.maroon,
+                      padding: "5px 15px",
+                      borderRadius: "20px",
+                      fontSize: "0.8rem",
+                      fontWeight: "600"
+                    }}>
+                      {product.salesCount || 0} sold
+                    </div>
+                    {/* Show multiple images indicator */}
+                    {product.images && product.images.length > 1 && (
+                      <div style={{
+                        position: "absolute",
+                        top: "15px",
+                        left: "15px",
+                        background: colors.maroon,
+                        color: "white",
+                        padding: "3px 8px",
+                        borderRadius: "12px",
+                        fontSize: "0.7rem",
+                        fontWeight: "600"
+                      }}>
+                        {product.images.length} photos
+                      </div>
+                    )}
                   </div>
-                  <div style={{
-                    position: "absolute",
-                    bottom: "15px",
-                    left: "15px",
-                    background: colors.gold,
-                    color: colors.maroon,
-                    padding: "5px 15px",
-                    borderRadius: "20px",
-                    fontSize: "0.8rem",
-                    fontWeight: "600"
-                  }}>
-                    {product.salesCount || 0} sold
-                  </div>
-                </div>
-              )}
+                  );
+                })()}
               
               <div style={{ padding: "20px" }}>
                 <div style={{
@@ -905,6 +1145,33 @@ export const ArtisanDashboard: React.FC = () => {
                     marginBottom: "15px"
                   }}>
                     <strong>Craftsmanship:</strong> {product.craftsmanship}
+                  </div>
+                )}
+
+                {product.reviews && product.reviews.length > 0 && (
+                  <div style={{
+                    marginTop: "15px",
+                    paddingTop: "15px",
+                    borderTop: `1px solid ${colors.gold}40`
+                  }}>
+                    <h4 style={{
+                      fontSize: "1rem",
+                      color: colors.maroon,
+                      marginBottom: "10px"
+                    }}>Customer Reviews ({product.reviews.length})</h4>
+                    {product.reviews.map((review, index) => (
+                      <div key={index} style={{ marginBottom: "10px", paddingBottom: "10px", borderBottom: `1px dashed ${colors.sand}` }}>
+                        <div style={{ display: "flex", alignItems: "center", marginBottom: "5px" }}>
+                          <span style={{ color: colors.gold, marginRight: "5px" }}>
+                            {'⭐'.repeat(review.rating)}
+                          </span>
+                          <span style={{ fontSize: "0.85rem", color: colors.teal }}>
+                            by {review.user} on {review.date ? new Date(review.date).toLocaleDateString() : 'N/A'}
+                          </span>
+                        </div>
+                        <p style={{ fontSize: "0.9rem", color: "#555" }}>"{review.comment}"</p>
+                      </div>
+                    ))}
                   </div>
                 )}
 
@@ -966,24 +1233,23 @@ export const ArtisanDashboard: React.FC = () => {
             </div>
           ))}
         </div>
-
-        {artisanProducts.length === 0 && (
-          <div style={{
-            textAlign: "center",
-            padding: "80px",
-            background: "rgba(255,255,255,0.5)",
-            borderRadius: "20px",
-            border: `2px dashed ${colors.gold}`
-          }}>
-            <div style={{ fontSize: "4rem", marginBottom: "20px" }}>🪔</div>
-            <h3 style={{ fontSize: "1.5rem", color: colors.maroon, marginBottom: "10px" }}>
-              No Products Yet
-            </h3>
-            <p style={{ color: colors.teal }}>
-              Click the "Add New Product" button to start listing your creations.
-            </p>
-          </div>
-        )}
+          ) : (
+            <div style={{
+              textAlign: "center",
+              padding: "80px",
+              background: "rgba(255,255,255,0.5)",
+              borderRadius: "20px",
+              border: `2px dashed ${colors.gold}`
+            }}>
+              <div style={{ fontSize: "4rem", marginBottom: "20px" }}>🪔</div>
+              <h3 style={{ fontSize: "1.5rem", color: colors.maroon, marginBottom: "10px" }}>
+                No Products Yet
+              </h3>
+              <p style={{ color: colors.teal }}>
+                Click the "Add New Product" button to start listing your creations.
+              </p>
+            </div>
+          )
         ) : (
           <div>
             {orders.length === 0 ? (

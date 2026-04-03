@@ -55,8 +55,6 @@ const TradePage: React.FC = () => {
   const { addToCart } = useCart();
   const [addedToCartId, setAddedToCartId] = useState<string | null>(null);
   const [subscribeEmail, setSubscribeEmail] = useState<string>("");
-  const [subscribeStatus, setSubscribeStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-  const [subscribeMessage, setSubscribeMessage] = useState<string>("");
 
   const handleAddToCart = (product: Product, artisanName: string) => {
     addToCart({
@@ -64,13 +62,16 @@ const TradePage: React.FC = () => {
       name: product.name,
       price: product.price,
       quantity: 1,
-      image: product.images[0],
+      image: product.images[0] || "https://images.unsplash.com/photo-1528459801416-a9e53bbf4e17?w=500&h=600&fit=crop",
       artisan: artisanName
     });
     
     setAddedToCartId(product._id);
     setTimeout(() => setAddedToCartId(null), 2000);
   };
+
+  const [subscribeStatus, setSubscribeStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [subscribeMessage, setSubscribeMessage] = useState<string>("");
 
   const handleSubscribe = async () => {
     if (!subscribeEmail.trim()) {
@@ -132,7 +133,6 @@ const TradePage: React.FC = () => {
         setRevenueCount(840000);
         
       } catch (error) {
-        console.error("Data fetching error:", error);
         setProducts(mockProducts);
         setArtisans(mockArtisans);
         setArtisanCount(mockArtisans.length);

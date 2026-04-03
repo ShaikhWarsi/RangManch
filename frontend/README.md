@@ -8,15 +8,14 @@ A modern React frontend for the AC-DC cultural heritage platform, providing an i
 - **Responsive Design**: Mobile-first approach with Tailwind CSS
 - **Modern UI**: Clean, intuitive interface with smooth animatio
 - **Interactive Gallery**: Rich media display for artisan poducts
-- **State Management**: Efficient data flow with React hooks
+- **State Management**: Efficient data flow with React hook
 
 ### **Performance**
 - **Code Splitting**: Optimized bundle loading
 - **Lazy Loading**: Images and components loaded on demand
 - **Caching**: Intelligent data caching for better UX
-- **SEO Ready**: Meta tags and structured data
-
-## 🛠 **Installation & Setup*
+- **SEO Ready**: Meta tags and structured dat
+## 🛠 **Installation & Setup
 
 ### **1. Install Dependences**
 ```bash

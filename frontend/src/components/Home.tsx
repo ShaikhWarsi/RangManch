@@ -136,6 +136,13 @@ const Home: React.FC = () => {
 
   useEffect(() => {
     if (!showLoading) {
+      const particles = document.querySelectorAll('.hero-particle');
+      particles.forEach(particle => {
+        (particle as HTMLElement).style.left = `${Math.random() * 100}%`;
+        (particle as HTMLElement).style.top = `${Math.random() * 100}%`;
+        (particle as HTMLElement).style.animationDelay = `${Math.random() * 5}s`;
+        (particle as HTMLElement).style.animationDuration = `${3 + Math.random() * 4}s`;
+      });
       const ctx = gsap.context(() => {
         gsap.to("#cloud2", {
           x: -750,
@@ -453,13 +460,7 @@ const Home: React.FC = () => {
             {[...Array(20)].map((_, i) => (
               <div 
                 key={i}
-                className="absolute w-1 h-1 rounded-full bg-[#C6A75E]/40"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                  animationDelay: `${Math.random() * 5}s`,
-                  animationDuration: `${3 + Math.random() * 4}s`
-                }}
+                className="absolute w-1 h-1 rounded-full bg-[#C6A75E]/40 hero-particle"
               />
             ))}
           </div>

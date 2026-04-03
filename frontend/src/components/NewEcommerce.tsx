@@ -54,6 +54,9 @@ const TradePage: React.FC = () => {
   
   const { addToCart } = useCart();
   const [addedToCartId, setAddedToCartId] = useState<string | null>(null);
+  const [subscribeEmail, setSubscribeEmail] = useState<string>("");
+  const [subscribeStatus, setSubscribeStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [subscribeMessage, setSubscribeMessage] = useState<string>("");
 
   const handleAddToCart = (product: Product, artisanName: string) => {
     addToCart({
@@ -67,6 +70,38 @@ const TradePage: React.FC = () => {
     
     setAddedToCartId(product._id);
     setTimeout(() => setAddedToCartId(null), 2000);
+  };
+
+  const handleSubscribe = async () => {
+    if (!subscribeEmail.trim()) {
+      setSubscribeStatus('error');
+      setSubscribeMessage('Please enter your email address');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(subscribeEmail)) {
+      setSubscribeStatus('error');
+      setSubscribeMessage('Please enter a valid email address');
+      return;
+    }
+
+    setSubscribeStatus('loading');
+
+    try {
+      const response = await apiService.subscribe(subscribeEmail);
+      if (response.success) {
+        setSubscribeStatus('success');
+        setSubscribeMessage('Thank you for subscribing! You will receive early access to our exclusive drops.');
+        setSubscribeEmail('');
+      } else {
+        setSubscribeStatus('error');
+        setSubscribeMessage(response.error || 'Subscription failed. Please try again.');
+      }
+    } catch (error) {
+      setSubscribeStatus('error');
+      setSubscribeMessage('Unable to subscribe right now. Please try again later.');
+    }
   };
   useEffect(() => {
     const fetchData = async () => {
@@ -425,15 +460,29 @@ const TradePage: React.FC = () => {
             <h2 className="text-4xl md:text-5xl font-heading text-ivory mb-8 leading-tight">Bring India's Finest Traditions to Your Home</h2>
             <p className="text-ivory/60 mb-10 text-lg font-ui italic">Get early access to limited edition drops and stories from our master artisans.</p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <input 
-                type="email" 
-                placeholder="Enter your email" 
+              <input
+                type="email"
+                placeholder="Enter your email"
+                value={subscribeEmail}
+                onChange={(e) => {
+                  setSubscribeEmail(e.target.value);
+                  if (subscribeStatus === 'error') setSubscribeStatus('idle');
+                }}
                 className="flex-1 bg-white/10 border border-white/20 rounded-2xl px-8 py-4 text-ivory outline-none focus:border-gold transition-all"
               />
-              <button className="px-10 py-4 bg-gold text-walnut rounded-2xl font-ui font-bold hover:bg-ivory transition-all shadow-xl">
-                Subscribe
+              <button
+                onClick={handleSubscribe}
+                disabled={subscribeStatus === 'loading'}
+                className="px-10 py-4 bg-gold text-walnut rounded-2xl font-ui font-bold hover:bg-ivory transition-all shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {subscribeStatus === 'loading' ? 'Subscribing...' : 'Subscribe'}
               </button>
             </div>
+            {subscribeMessage && (
+              <div className={`mt-4 text-sm font-ui ${subscribeStatus === 'success' ? 'text-green-400' : 'text-red-400'}`}>
+                {subscribeMessage}
+              </div>
+            )}
           </div>
         </div>
       </div>

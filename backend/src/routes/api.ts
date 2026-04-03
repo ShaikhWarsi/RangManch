@@ -27,6 +27,16 @@ const initTables = async () => {
         )
       `
     });
+    await supabase.rpc('exec', {
+      query: `
+        CREATE TABLE IF NOT EXISTS subscribers (
+          id SERIAL PRIMARY KEY,
+          email VARCHAR(255) UNIQUE NOT NULL,
+          subscribed BOOLEAN DEFAULT true,
+          subscribed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `
+    });
     console.log("Database tables initialized");
   } catch (error) {
     console.log("Tables may already exist:", error);
@@ -168,6 +178,49 @@ router.post("/artisans", async (req: any, res: any) => {
     res.status(201).json({ success: true, data: data[0] });
   } catch (error: any) {
     console.error('Create artisan error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+router.post("/subscribe", async (req: any, res: any) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ success: false, error: "Email is required" });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ success: false, error: "Invalid email format" });
+    }
+
+    const { data, error } = await supabase.from('subscribers').upsert(
+      { email, subscribed: true, subscribed_at: new Date().toISOString() },
+      { onConflict: 'email' }
+    ).select();
+
+    if (error) {
+      if (error.code === '23505') {
+        return res.status(409).json({ success: false, error: "Email already subscribed" });
+      }
+      throw error;
+    }
+
+    res.status(201).json({ success: true, message: "Successfully subscribed to our newsletter!", data: data[0] });
+  } catch (error: any) {
+    console.error('Subscribe error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+router.get("/subscribers", async (req: any, res: any) => {
+  try {
+    const { data, error } = await supabase.from('subscribers').select('*').eq('subscribed', true).order('subscribed_at', { ascending: false });
+    if (error) throw error;
+    res.json({ success: true, data: data || [], count: data?.length || 0 });
+  } catch (error: any) {
+    console.error('Get subscribers error:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });

@@ -216,6 +216,18 @@ class ApiService {
       };
     }
   }
+
+  // Subscribe to newsletter
+  async subscribe(email: string): Promise<ApiResponse<{ email: string; subscribed: boolean }>> {
+    try {
+      return await this.request<{ email: string; subscribed: boolean }>('/subscribe', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
 export const apiService = new ApiService();

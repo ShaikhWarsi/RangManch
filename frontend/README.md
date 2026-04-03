@@ -6,7 +6,7 @@ A modern React frontend for the AC-DC cultural heritage platform, providing an i
 
 ### **User Experience**
 - **Responsive Design**: Mobile-first approach with Tailwind CSS
-- **Modern UI**: Clean, intuitive interface with smooth animations
+- **Modern UI**: Clean, intuitive interface with smooth animation
 - **Interactive Gallery**: Rich media display for artisan poducts
 - **State Management**: Efficient data flow with React hooks
 

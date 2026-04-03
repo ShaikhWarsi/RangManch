@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: false, // Disabled to prevent Leaflet double-initialization
-  output: 'export', // Enable static exports for Netlify
+  // output: 'export', // Temporarily disabled for dynamic pages
   trailingSlash: true,
   pageExtensions: ['tsx', 'ts', 'js', 'jsx'], // Allow pages directory with app router
   eslint: {
@@ -41,13 +41,6 @@ const nextConfig = {
     });
     
     return config;
-  },
-  env: {
-    CUSTOM_KEY: 'my-value',
-  },
-  // Handle client components with static export
-  experimental: {
-    // Remove invalid option
   },
 };
 

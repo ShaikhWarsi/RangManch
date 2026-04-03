@@ -23,27 +23,10 @@
     "lucide-react": "^0.263.1",
     "next": "14.2.35",
     "postcss": "^8.4.31",
-    "lint": "next lint",
-    "seed": "node scripts/seed-data.js",
-    "seed:db": "node scripts/seed-mongodb.js",
-    "type-check": "tsc --noEmit"
-  },
-  "dependencies": {
-    "@heroicons/react": "^2.0.18",
-    "@splidejs/react-splide": "^0.7.12",
-    "autoprefixer": "^10.4.27",
-    "bootstrap": "^5.3.2",
-    "firebase": "^12.9.0",
-    "gsap": "^3.12.2",
-    "gsap-trial": "^3.12.2",
-    "imagesloaded": "^5.0.0",
-    "lucide-react": "^1.7.0",
-    "material-icons": "^1.13.12",
-    "next": "^14.2.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-fontawesome": "^1.7.1",
     "react-icons": "^4.11.0",
+    "react-leaflet": "^4.2.1",
     "styled-components": "^6.0.8"
   },
   "devDependencies": {
@@ -55,13 +38,10 @@
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "aos": "^2.3.4",
-    "atropos": "^2.0.2",
+    "atropos": "^2.2.2",
     "eslint": "^8",
-    "eslint-config-next": "^14.2.2",
-    "leaflet": "^1.9.4",
-    "react-leaflet": "^4.2.1",
+    "eslint-config-next": "^14.2.35",
     "tailwindcss": "^3.3.3",
     "typescript": "^5.1.0"
   }
 }
->>>>>>> 792a42e65677ebbd52c06cefc52eac99e9aa00f9
